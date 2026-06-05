@@ -92,9 +92,15 @@ struct HomeView: View {
                 }
             }
 
-            FloatingTabBar(selectedTab: $selectedTab)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 28)
+            AppTabBar(selectedIndex: selectedTab) { index in
+                if index == 3 {
+                    appState.navigate(to: .profile)
+                } else {
+                    selectedTab = index
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 28)
         }
     }
 }
@@ -453,54 +459,6 @@ private struct AchievementCard: View {
     }
 }
 
-// MARK: - Floating Tab Bar
-
-private struct FloatingTabBar: View {
-    @Binding var selectedTab: Int
-
-    private let tabs: [(icon: String, label: String)] = [
-        ("house.fill",   "ホーム"),
-        ("trophy.fill",  "ランキング"),
-        ("bag.fill",     "コレクション"),
-        ("person.fill",  "プロフィール"),
-    ]
-
-    var body: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(tabs.enumerated()), id: \.offset) { index, tab in
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = index
-                    }
-                } label: {
-                    VStack(spacing: 4) {
-                        ZStack {
-                            if selectedTab == index {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.primaryPurple.opacity(0.12))
-                                    .frame(width: 44, height: 34)
-                            }
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 20))
-                                .foregroundColor(selectedTab == index ? .primaryPurple : .textGray.opacity(0.5))
-                        }
-                        Text(tab.label)
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
-                            .foregroundColor(selectedTab == index ? .primaryPurple : .textGray.opacity(0.5))
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.10), radius: 20, x: 0, y: 8)
-        )
-    }
-}
 
 #Preview {
     HomeView()

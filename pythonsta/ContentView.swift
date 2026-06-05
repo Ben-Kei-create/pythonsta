@@ -25,6 +25,9 @@ struct ContentView: View {
             case .result:
                 ResultView(result: appState.currentResult)
                     .transition(.opacity)
+            case .profile:
+                ProfileView()
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)

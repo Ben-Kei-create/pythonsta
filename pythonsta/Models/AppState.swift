@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Screen {
-    case welcome, home, lesson, result
+    case welcome, home, lesson, result, profile
 }
 
 final class AppState: ObservableObject {

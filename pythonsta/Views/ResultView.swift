@@ -89,29 +89,6 @@ private struct ResultBackground: View {
     }
 }
 
-// MARK: - PlaceholderArtworkView (shared)
-
-struct PlaceholderArtworkView: View {
-    let label: String
-    var height: CGFloat = 120
-    var cornerRadius: CGFloat = 16
-    var background: Color = Color.white.opacity(0.18)
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(background)
-                .frame(maxWidth: .infinity)
-                .frame(height: height)
-            Text(label)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.55))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
-        }
-    }
-}
-
 // MARK: - Success Header
 
 private struct SuccessHeaderView: View {

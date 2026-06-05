@@ -75,6 +75,7 @@ struct RoundedProgressBar: View {
 }
 
 // MARK: - MascotPlaceholder
+// Text-only container. Artwork supplied separately as [Pyro Mascot].
 
 struct MascotPlaceholder: View {
     let size: CGFloat
@@ -82,21 +83,42 @@ struct MascotPlaceholder: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.2)
-                .fill(Color.snakeGreen.opacity(0.12))
+                .fill(Color.snakeGreen.opacity(0.08))
                 .overlay(
                     RoundedRectangle(cornerRadius: size * 0.2)
-                        .strokeBorder(Color.snakeGreen.opacity(0.4), lineWidth: 2)
+                        .strokeBorder(Color.snakeGreen.opacity(0.25), lineWidth: 1.5)
                 )
-            VStack(spacing: 4) {
-                Text("🐍")
-                    .font(.system(size: size * 0.35))
-                Text("[Pyro Mascot]")
-                    .font(AppFonts.caption)
-                    .foregroundColor(.textGray)
-                    .multilineTextAlignment(.center)
-            }
+            Text("[Pyro Mascot]")
+                .font(.system(size: max(size * 0.11, 9), weight: .medium, design: .rounded))
+                .foregroundColor(.textGray.opacity(0.55))
+                .multilineTextAlignment(.center)
+                .padding(8)
         }
         .frame(width: size, height: size)
+    }
+}
+
+// MARK: - PlaceholderArtworkView
+// Generic text-only placeholder for any future image asset.
+
+struct PlaceholderArtworkView: View {
+    let label: String
+    var height: CGFloat = 120
+    var cornerRadius: CGFloat = 16
+    var background: Color = Color.white.opacity(0.18)
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(background)
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+            Text(label)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.55))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
+        }
     }
 }
 
@@ -141,5 +163,62 @@ struct RewardChip: View {
         .padding(.vertical, 10)
         .background(color.opacity(0.12))
         .cornerRadius(12)
+    }
+}
+
+// MARK: - AppTabBar
+// Shared bottom navigation bar used across Home and Profile screens.
+
+struct AppTabBar: View {
+    let selectedIndex: Int
+    let onSelect: (Int) -> Void
+
+    private let tabs: [(icon: String, label: String)] = [
+        ("house.fill",  "ホーム"),
+        ("trophy.fill", "ランキング"),
+        ("bag.fill",    "コレクション"),
+        ("person.fill", "プロフィール"),
+    ]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(tabs.enumerated()), id: \.offset) { index, tab in
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        onSelect(index)
+                    }
+                } label: {
+                    VStack(spacing: 4) {
+                        ZStack {
+                            if selectedIndex == index {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.primaryPurple.opacity(0.12))
+                                    .frame(width: 44, height: 34)
+                            }
+                            Image(systemName: tab.icon)
+                                .font(.system(size: 20))
+                                .foregroundColor(
+                                    selectedIndex == index ? .primaryPurple : .textGray.opacity(0.5)
+                                )
+                        }
+                        Text(tab.label)
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundColor(
+                                selectedIndex == index ? .primaryPurple : .textGray.opacity(0.5)
+                            )
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.10), radius: 20, x: 0, y: 8)
+        )
     }
 }
