@@ -10,90 +10,133 @@ import SwiftUI
 struct WelcomeView: View {
     @EnvironmentObject var appState: AppState
 
+    @State private var appeared   = false
+    @State private var mascotFloat = false
+
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [.primaryPurple, .deepPurple],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+        GeometryReader { geo in
+            ZStack {
+                // ── Background ──────────────────────────────────────────
+                LinearGradient(
+                    colors: [Color(hex: "#5C44F5"), Color(hex: "#4026D9")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-            // Decorative floating symbols
-            DecorativeSymbols()
+                // Subtle inner glow at top
+                RadialGradient(
+                    colors: [Color.white.opacity(0.08), Color.clear],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: geo.size.height * 0.55
+                )
+                .ignoresSafeArea()
 
-            // Main content
-            VStack(spacing: 0) {
-                Spacer()
+                // ── Main layout ──────────────────────────────────────────
+                VStack(spacing: 0) {
 
-                MascotPlaceholder(size: 200)
-                    .padding(.bottom, 32)
+                    // Logo area
+                    LogoArea()
+                        .padding(.top, 20)
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : -10)
+                        .animation(.easeOut(duration: 0.5).delay(0.1), value: appeared)
 
-                Text("PythonSta")
-                    .font(AppFonts.largeTitle)
-                    .foregroundColor(.white)
+                    Spacer()
 
-                Text("楽しく学んで、未来をコードしよう！")
-                    .font(AppFonts.body)
-                    .foregroundColor(.white.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 8)
+                    // Hero — ~35 % of screen height, floating
+                    MascotPlaceholder(size: geo.size.height * 0.35)
+                        .offset(y: mascotFloat ? -8 : 8)
+                        .animation(
+                            .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
+                            value: mascotFloat
+                        )
+                        .opacity(appeared ? 1 : 0)
+                        .scaleEffect(appeared ? 1 : 0.88)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2), value: appeared)
 
-                Spacer()
+                    Spacer()
 
-                VStack(spacing: 16) {
-                    PillButton(title: "はじめる！", color: .pythonLime) {
+                    // Headline
+                    Text("Pythonを\nもっと楽しく。")
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 12)
+                        .animation(.easeOut(duration: 0.5).delay(0.35), value: appeared)
+
+                    // Description
+                    Text("ゲーム感覚で学べる\n新しいPython学習アプリ")
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.top, 12)
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 10)
+                        .animation(.easeOut(duration: 0.5).delay(0.45), value: appeared)
+
+                    Spacer()
+
+                    // Primary CTA
+                    Button {
+                        appState.navigate(to: .home)
+                    } label: {
+                        Text("はじめる")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(Color(hex: "#1D2433"))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .background(Color(hex: "#B9F238"))
+                            .clipShape(Capsule())
+                            .shadow(color: Color(hex: "#B9F238").opacity(0.45), radius: 16, x: 0, y: 8)
+                    }
+                    .frame(width: geo.size.width * 0.80)
+                    .opacity(appeared ? 1 : 0)
+                    .scaleEffect(appeared ? 1 : 0.94)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.55), value: appeared)
+
+                    // Secondary CTA
+                    Button("ログイン") {
                         appState.navigate(to: .home)
                     }
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.90))
+                    .padding(.top, 20)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(.easeOut(duration: 0.4).delay(0.65), value: appeared)
 
-                    Button("すでにアカウントをお持ちの方はこちら") {
-                        appState.navigate(to: .home)
-                    }
-                    .font(AppFonts.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    Spacer().frame(height: 52)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
             }
+        }
+        .onAppear {
+            appeared     = true
+            mascotFloat  = true
         }
     }
 }
 
-// MARK: - Decorative background symbols
+// MARK: - Logo area
 
-private struct DecorativeSymbols: View {
+private struct LogoArea: View {
     var body: some View {
-        ZStack {
-            Text("</>")
-                .font(.system(size: 48, weight: .bold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.12))
-                .offset(x: -110, y: -180)
-                .rotationEffect(.degrees(-15))
+        VStack(spacing: 6) {
+            // Small mascot badge near logo
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.12))
+                    .frame(width: 44, height: 44)
+                Text("🐍")
+                    .font(.system(size: 22))
+            }
 
-            Text("{}")
-                .font(.system(size: 56, weight: .bold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.10))
-                .offset(x: 120, y: -120)
-                .rotationEffect(.degrees(20))
-
-            Text("( )")
-                .font(.system(size: 36, weight: .bold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.08))
-                .offset(x: -130, y: 60)
-                .rotationEffect(.degrees(10))
-
-            Text("[]")
-                .font(.system(size: 44, weight: .bold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.10))
-                .offset(x: 130, y: 100)
-                .rotationEffect(.degrees(-10))
-
-            Text("#")
-                .font(.system(size: 40, weight: .bold, design: .monospaced))
-                .foregroundColor(.white.opacity(0.08))
-                .offset(x: 80, y: 200)
-                .rotationEffect(.degrees(5))
+            Text("PythonSta")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
         }
     }
 }
