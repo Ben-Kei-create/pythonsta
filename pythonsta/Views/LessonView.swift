@@ -56,7 +56,7 @@ struct LessonView: View {
 
             VStack(spacing: 0) {
                 // Top bar
-                LessonTopBar(onBack: { appState.navigate(to: .home) })
+                LessonTopBar(hearts: appState.progress.hearts, onBack: { appState.navigate(to: .home) })
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 8)
@@ -104,7 +104,9 @@ struct LessonView: View {
                     isCorrect: isCorrect,
                     onNext: {
                         if isCorrect {
-                            appState.navigate(to: .result)
+                            // Progress is updated (XP, gems, streak, completedLessons).
+                            // LessonResult.preview is used until per-question result data is wired.
+                            appState.completeLesson(result: .preview)
                         } else {
                             withAnimation {
                                 showSheet    = false
@@ -123,6 +125,7 @@ struct LessonView: View {
     private func submitAnswer() {
         guard let selectedID = answerState.selectedID else { return }
         isCorrect = (selectedID == correctAnswerID)
+        if !isCorrect { appState.loseHeart() }
         withAnimation {
             answerState = .submitted(selectedID)
         }
@@ -135,6 +138,7 @@ struct LessonView: View {
 // MARK: - Top Bar
 
 private struct LessonTopBar: View {
+    let hearts: Int
     let onBack: () -> Void
 
     var body: some View {
@@ -164,7 +168,7 @@ private struct LessonTopBar: View {
             HStack(spacing: 3) {
                 Text("❤️")
                     .font(.system(size: 14))
-                Text("5")
+                Text("\(hearts)")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundColor(.errorRed)
             }

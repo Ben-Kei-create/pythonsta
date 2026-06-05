@@ -78,7 +78,7 @@ struct HomeView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
 
-                    DailyProgressCard()
+                    DailyProgressCard(progress: appState.progress)
                         .padding(.horizontal, 20)
 
                     LearningPathSection(onStartLesson: {
@@ -138,35 +138,38 @@ private struct HomeHeader: View {
 // MARK: - Daily Progress Card
 
 private struct DailyProgressCard: View {
+    let progress: UserProgress
+    private let dailyGoal = 5
+
+    private var dailyFraction: Double {
+        min(Double(progress.dailyCompletedLessons) / Double(dailyGoal), 1.0)
+    }
+
     var body: some View {
         FloatingCard {
             VStack(alignment: .leading, spacing: 16) {
-                // Title
                 Text("今日の進捗")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(.textGray)
 
-                // Lesson count
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("3")
+                    Text("\(progress.dailyCompletedLessons)")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.textDark)
-                    Text("/ 5 レッスン完了")
+                    Text("/ \(dailyGoal) レッスン完了")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundColor(.textGray)
                         .padding(.bottom, 4)
                 }
 
-                // Progress bar
-                RoundedProgressBar(value: 0.6, color: .primaryPurple, height: 10)
+                RoundedProgressBar(value: dailyFraction, color: .primaryPurple, height: 10)
 
-                // Stats row
                 HStack(spacing: 0) {
-                    StatItem(icon: "🔥", value: "12日",    label: "連続")
+                    StatItem(icon: "🔥", value: "\(progress.currentStreak)日", label: "連続")
                     Divider().frame(height: 32)
-                    StatItem(icon: "⭐", value: "2,450",   label: "XP")
+                    StatItem(icon: "⭐", value: "\(progress.totalXP)",         label: "XP")
                     Divider().frame(height: 32)
-                    StatItem(icon: "💎", value: "180",     label: "Gems")
+                    StatItem(icon: "💎", value: "\(progress.gems)",            label: "Gems")
                 }
                 .padding(.top, 4)
             }

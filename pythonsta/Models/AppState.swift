@@ -14,6 +14,17 @@ enum Screen {
 final class AppState: ObservableObject {
     @Published var currentScreen: Screen = .welcome
     @Published var currentResult: LessonResult = .preview
+    @Published private(set) var progress: UserProgress
+
+    private let store = UserProgressStore()
+
+    init() {
+        let saved = store.load()
+        self.progress = saved
+        checkStreakOnLaunch()
+    }
+
+    // MARK: - Navigation
 
     func navigate(to screen: Screen) {
         withAnimation(.easeInOut(duration: 0.3)) {
@@ -21,10 +32,149 @@ final class AppState: ObservableObject {
         }
     }
 
+    // MARK: - Lesson completion
+
+    // Batch-updates all progress from a completed lesson in one save.
+    // NOTE: LessonResult.preview is passed by LessonView until real per-question
+    // result data is wired; the underlying counters (XP, gems, streak) are real.
     func completeLesson(result: LessonResult) {
+        progress.totalXP += result.xpEarned
+        progress.levelCurrentXP += result.xpEarned
+        applyLevelUps()
+        progress.gems = max(0, progress.gems + result.gemsEarned)
+        progress.completedLessons += 1
+        recordActivity()
+        save()
+
         currentResult = result
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = .result
         }
+    }
+
+    // MARK: - Individual mutations (each saves immediately)
+
+    func addXP(_ amount: Int) {
+        progress.totalXP += amount
+        progress.levelCurrentXP += amount
+        applyLevelUps()
+        save()
+    }
+
+    func addGems(_ amount: Int) {
+        progress.gems = max(0, progress.gems + amount)
+        save()
+    }
+
+    func unlockAchievement(id: Int) {
+        guard !progress.unlockedAchievementIDs.contains(id) else { return }
+        progress.unlockedAchievementIDs.append(id)
+        save()
+    }
+
+    func loseHeart() {
+        guard progress.hearts > 0 else { return }
+        progress.hearts -= 1
+        save()
+    }
+
+    func resetHearts() {
+        progress.hearts = 5
+        save()
+    }
+
+    // Exposed for external callers (e.g. a future daily-login bonus screen).
+    func updateStreakIfNeeded() {
+        recordActivity()
+        save()
+    }
+
+    // MARK: - Computed UserProfile
+
+    // Bridges persisted UserProgress into the UserProfile shape that ProfileView expects.
+    // displayName / username remain hardcoded until an auth system is added.
+    // totalLessons (24) is mock until a lesson catalog is implemented.
+    // achievements ([]) is mock until achievement unlock tracking is wired to unlockAchievement.
+    // totalLearningMinutes (0) is mock until in-lesson time tracking is added.
+    var userProfile: UserProfile {
+        UserProfile(
+            displayName: "茂木史明",
+            username: "@fumiaki_dev",
+            level: progress.currentLevel,
+            totalXP: progress.totalXP,
+            levelCurrentXP: progress.levelCurrentXP,
+            levelMaxXP: progress.currentLevelMaxXP,
+            currentStreak: progress.currentStreak,
+            gems: progress.gems,
+            totalLearningMinutes: 0,
+            completedLessons: progress.completedLessons,
+            totalLessons: 24,
+            achievements: []
+        )
+    }
+
+    // MARK: - Private
+
+    // On launch: reset daily counter and streak if the user missed days.
+    // Does NOT advance the streak — that only happens on lesson completion.
+    private func checkStreakOnLaunch() {
+        guard !progress.lastActiveDateString.isEmpty else { return }
+        let today = isoDate(Date())
+        guard progress.lastActiveDateString != today else { return }
+
+        var dirty = false
+
+        if progress.dailyCompletedLessons != 0 {
+            progress.dailyCompletedLessons = 0
+            dirty = true
+        }
+
+        let yesterday = isoDate(Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
+        if progress.lastActiveDateString != yesterday, progress.currentStreak != 0 {
+            progress.currentStreak = 0
+            dirty = true
+        }
+
+        if dirty { save() }
+    }
+
+    // Updates streak and daily count when a lesson is completed.
+    // Called from completeLesson (via save-once batch) and updateStreakIfNeeded.
+    private func recordActivity() {
+        let today = isoDate(Date())
+
+        if progress.lastActiveDateString == today {
+            progress.dailyCompletedLessons += 1
+            return
+        }
+
+        let yesterday = isoDate(Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
+        if progress.lastActiveDateString == yesterday {
+            progress.currentStreak += 1
+        } else {
+            // First lesson ever, or gap of 2+ days (streak already reset by checkStreakOnLaunch)
+            progress.currentStreak = 1
+        }
+
+        progress.lastActiveDateString = today
+        progress.dailyCompletedLessons += 1
+    }
+
+    private func applyLevelUps() {
+        while progress.levelCurrentXP >= progress.currentLevelMaxXP {
+            progress.levelCurrentXP -= progress.currentLevelMaxXP
+            progress.currentLevel += 1
+        }
+    }
+
+    private func isoDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f.string(from: date)
+    }
+
+    private func save() {
+        store.save(progress)
     }
 }

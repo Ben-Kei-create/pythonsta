@@ -26,7 +26,7 @@ struct ContentView: View {
                 ResultView(result: appState.currentResult)
                     .transition(.opacity)
             case .profile:
-                ProfileView()
+                ProfileView(profile: appState.userProfile)
                     .transition(.opacity)
             case .ranking:
                 RankingView()
