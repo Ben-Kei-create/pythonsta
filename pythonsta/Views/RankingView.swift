@@ -378,16 +378,7 @@ struct RankingRowView: View {
 
 private struct RankingEmptyStateView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.primaryPurple.opacity(0.06))
-                    .frame(width: 100, height: 100)
-                Text("[Ranking\nIllustration]")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundColor(.primaryPurple.opacity(0.35))
-                    .multilineTextAlignment(.center)
-            }
+        VStack(spacing: 12) {
             Text("まだランキングデータがありません")
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundColor(.textDark)
