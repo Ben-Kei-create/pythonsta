@@ -60,6 +60,7 @@ struct RankingView: View {
             AppTabBar(selectedIndex: 1) { index in
                 switch index {
                 case 0: appState.navigate(to: .home)
+                case 2: appState.navigate(to: .collection)
                 case 3: appState.navigate(to: .profile)
                 default: break
                 }

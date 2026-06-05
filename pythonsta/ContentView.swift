@@ -31,6 +31,9 @@ struct ContentView: View {
             case .ranking:
                 RankingView()
                     .transition(.opacity)
+            case .collection:
+                CollectionView()
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)

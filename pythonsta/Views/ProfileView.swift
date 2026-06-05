@@ -47,6 +47,7 @@ struct ProfileView: View {
                 switch index {
                 case 0: appState.navigate(to: .home)
                 case 1: appState.navigate(to: .ranking)
+                case 2: appState.navigate(to: .collection)
                 default: break
                 }
             }

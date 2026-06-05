@@ -95,6 +95,7 @@ struct HomeView: View {
             AppTabBar(selectedIndex: selectedTab) { index in
                 switch index {
                 case 1: appState.navigate(to: .ranking)
+                case 2: appState.navigate(to: .collection)
                 case 3: appState.navigate(to: .profile)
                 default: selectedTab = index
                 }
