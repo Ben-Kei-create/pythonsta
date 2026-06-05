@@ -115,12 +115,15 @@ private struct ProfileHeroCard: View {
                         Text(profile.username)
                             .font(.system(size: 13, weight: .regular, design: .rounded))
                             .foregroundColor(.white.opacity(0.70))
+                            .minimumScaleFactor(0.85)
                             .lineLimit(1)
 
                         // Level badge
                         Text("Lv.\(profile.level) · \(profile.totalXP) XP")
                             .font(.system(size: 12, weight: .bold, design: .rounded))
                             .foregroundColor(.textDark)
+                            .minimumScaleFactor(0.8)
+                            .lineLimit(1)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
                             .background(Color.pythonLime)
@@ -160,7 +163,7 @@ private struct LifetimeStatsCard: View {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
                     ProfileStatCell(
-                        value: profile.totalXP.formatted(),
+                        value: "\(profile.totalXP)",
                         label: "Total XP",
                         color: .primaryPurple
                     )
@@ -336,25 +339,31 @@ private struct ProfileAchievementsSection: View {
     let achievements: [ProfileAchievement]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("実績")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundColor(.textDark)
-                Spacer()
-                Button("すべて見る") { }
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(.primaryPurple)
-            }
-            .padding(.horizontal, 20)
+        // The entire section is suppressed when there are no achievements.
+        // body is implicitly @ViewBuilder, so the if/else compiles cleanly.
+        if achievements.isEmpty {
+            EmptyView()
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("実績")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundColor(.textDark)
+                    Spacer()
+                    Button("すべて見る") { }
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.primaryPurple)
+                }
+                .padding(.horizontal, 20)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    Spacer().frame(width: 8)
-                    ForEach(achievements) { item in
-                        ProfileAchievementCard(item: item)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        Spacer().frame(width: 8)
+                        ForEach(achievements) { item in
+                            ProfileAchievementCard(item: item)
+                        }
+                        Spacer().frame(width: 8)
                     }
-                    Spacer().frame(width: 8)
                 }
             }
         }

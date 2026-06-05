@@ -100,12 +100,15 @@ struct MascotPlaceholder: View {
 
 // MARK: - PlaceholderArtworkView
 // Generic text-only placeholder for any future image asset.
+// labelColor defaults to white for use on dark/gradient backgrounds;
+// pass a custom color when placing on light card backgrounds.
 
 struct PlaceholderArtworkView: View {
     let label: String
     var height: CGFloat = 120
     var cornerRadius: CGFloat = 16
     var background: Color = Color.white.opacity(0.18)
+    var labelColor: Color = Color.white.opacity(0.55)
 
     var body: some View {
         ZStack {
@@ -115,7 +118,7 @@ struct PlaceholderArtworkView: View {
                 .frame(height: height)
             Text(label)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.55))
+                .foregroundColor(labelColor)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 16)
         }
