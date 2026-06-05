@@ -82,7 +82,7 @@ struct CollectionView: View {
 
 private struct AchievementCollectionHeaderView: View {
     var body: some View {
-        HStack(alignment: .center) {
+        HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("コレクション")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -92,13 +92,6 @@ private struct AchievementCollectionHeaderView: View {
                     .foregroundColor(.textGray)
             }
             Spacer()
-            Image(systemName: "star.fill")
-                .font(.system(size: 18))
-                .foregroundColor(.textGray)
-                .frame(width: 40, height: 40)
-                .background(Color.white)
-                .cornerRadius(12)
-                .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
         }
     }
 }
@@ -292,16 +285,7 @@ private struct AchievementGridCard: View {
 
 private struct AchievementEmptyStateView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.primaryPurple.opacity(0.06))
-                    .frame(width: 100, height: 100)
-                Text("[Collection\nIllustration]")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundColor(.primaryPurple.opacity(0.35))
-                    .multilineTextAlignment(.center)
-            }
+        VStack(spacing: 12) {
             Text("表示する実績がありません")
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundColor(.textDark)
