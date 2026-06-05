@@ -13,10 +13,18 @@ enum Screen {
 
 final class AppState: ObservableObject {
     @Published var currentScreen: Screen = .welcome
+    @Published var currentResult: LessonResult = .preview
 
     func navigate(to screen: Screen) {
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = screen
+        }
+    }
+
+    func completeLesson(result: LessonResult) {
+        currentResult = result
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentScreen = .result
         }
     }
 }

@@ -23,7 +23,7 @@ struct ContentView: View {
                 LessonView()
                     .transition(.opacity)
             case .result:
-                ResultView()
+                ResultView(result: appState.currentResult)
                     .transition(.opacity)
             }
         }

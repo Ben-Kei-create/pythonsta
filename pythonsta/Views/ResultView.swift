@@ -7,182 +7,198 @@
 
 import SwiftUI
 
+// MARK: - ResultView
+
 struct ResultView: View {
     @EnvironmentObject var appState: AppState
 
-    @State private var appeared       = false
-    @State private var levelProgress  = false
-    @State private var xpScale        = false
-    @State private var confettiDrift  = false
+    var result: LessonResult = .preview
+
+    @State private var appeared      = false
+    @State private var animateXP     = false
+    @State private var animateLevel  = false
 
     var body: some View {
         ZStack {
-            // ── Gradient background ───────────────────────────────────
+            ResultBackground()
+            ConfettiLayer()
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    Spacer().frame(height: 8)
+
+                    PlaceholderArtworkView(label: "[Achievement Artwork]", height: 200)
+                        .appear(appeared, scale: true, delay: 0.10)
+
+                    SuccessHeaderView(result: result, animateXP: animateXP)
+                        .appear(appeared, delay: 0.25)
+
+                    StatisticsCardView(result: result)
+                        .appear(appeared, delay: 0.38)
+
+                    LevelProgressCardView(result: result, animate: animateLevel)
+                        .appear(appeared, delay: 0.50)
+
+                    if let achievement = result.unlockedAchievement {
+                        AchievementUnlockCardView(achievement: achievement)
+                            .appear(appeared, delay: 0.62)
+                    }
+
+                    PyroEncouragementView(message: result.encouragementMessage)
+                        .appear(appeared, delay: 0.72)
+
+                    ResultCTAView(
+                        onNext:  { appState.navigate(to: .home) },
+                        onLater: { appState.navigate(to: .home) }
+                    )
+                    .appear(appeared, delay: 0.80)
+
+                    Spacer().frame(height: 40)
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .onAppear {
+            appeared = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.65)) { animateXP    = true }
+                withAnimation(.easeOut(duration: 1.0))                        { animateLevel = true }
+            }
+        }
+    }
+}
+
+// MARK: - Background
+
+private struct ResultBackground: View {
+    var body: some View {
+        ZStack {
             LinearGradient(
                 colors: [Color(hex: "#B9F238"), Color(hex: "#20D6A4")],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .ignoresSafeArea()
-
-            // ── Subtle inner glow ──────────────────────────────────────
             RadialGradient(
-                colors: [Color.white.opacity(0.15), Color.clear],
+                colors: [Color.white.opacity(0.14), Color.clear],
                 center: .top,
                 startRadius: 0,
-                endRadius: 300
+                endRadius: 280
             )
-            .ignoresSafeArea()
-
-            // ── Confetti (premium, subtle) ─────────────────────────────
-            ConfettiLayer(drifting: confettiDrift)
-
-            // ── Scrollable content ─────────────────────────────────────
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 28) {
-                    Spacer().frame(height: 16)
-
-                    CelebrationArea()
-                        .opacity(appeared ? 1 : 0)
-                        .scaleEffect(appeared ? 1 : 0.85)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.65).delay(0.1), value: appeared)
-
-                    SuccessHeader(xpScale: xpScale)
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 16)
-                        .animation(.easeOut(duration: 0.45).delay(0.25), value: appeared)
-
-                    StatsCard()
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 20)
-                        .animation(.easeOut(duration: 0.45).delay(0.38), value: appeared)
-
-                    LevelProgressCard(animate: levelProgress)
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 20)
-                        .animation(.easeOut(duration: 0.45).delay(0.50), value: appeared)
-
-                    AchievementUnlockCard()
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 20)
-                        .animation(.easeOut(duration: 0.45).delay(0.62), value: appeared)
-
-                    PyroSection()
-                        .opacity(appeared ? 1 : 0)
-                        .animation(.easeOut(duration: 0.4).delay(0.72), value: appeared)
-
-                    CTASection(
-                        onNext:  { appState.navigate(to: .home) },
-                        onLater: { appState.navigate(to: .home) }
-                    )
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 16)
-                    .animation(.easeOut(duration: 0.4).delay(0.80), value: appeared)
-
-                    Spacer().frame(height: 48)
-                }
-                .padding(.horizontal, 24)
-            }
         }
-        .onAppear {
-            appeared      = true
-            confettiDrift = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-                withAnimation(.easeOut(duration: 0.8)) { xpScale      = true }
-                withAnimation(.easeOut(duration: 1.0)) { levelProgress = true }
-            }
-        }
+        .ignoresSafeArea()
     }
 }
 
-// MARK: - Celebration Area
+// MARK: - PlaceholderArtworkView (shared)
 
-private struct CelebrationArea: View {
+struct PlaceholderArtworkView: View {
+    let label: String
+    var height: CGFloat = 120
+    var cornerRadius: CGFloat = 16
+    var background: Color = Color.white.opacity(0.18)
+
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.18))
-                .frame(height: 200)
-            VStack(spacing: 8) {
-                Text("🏆")
-                    .font(.system(size: 54))
-                Text("[Achievement Artwork]")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.6))
-            }
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(background)
+                .frame(maxWidth: .infinity)
+                .frame(height: height)
+            Text(label)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.55))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
     }
 }
 
-// MARK: - Success Header + XP Rewards
+// MARK: - Success Header
 
-private struct SuccessHeader: View {
-    let xpScale: Bool
+private struct SuccessHeaderView: View {
+    let result: LessonResult
+    let animateXP: Bool
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Title
-            Text("レッスンクリア！")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+        VStack(spacing: 14) {
+            Text(result.successTitle)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
 
-            // Large XP number
-            Text("+50 XP")
+            Text("+\(result.xpEarned) XP")
                 .font(.system(size: 52, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
-                .scaleEffect(xpScale ? 1 : 0.6)
-                .opacity(xpScale ? 1 : 0)
+                .minimumScaleFactor(0.75)
+                .lineLimit(1)
+                .scaleEffect(animateXP ? 1 : 0.55)
+                .opacity(animateXP ? 1 : 0)
 
-            // Reward badges row
-            HStack(spacing: 12) {
-                RewardBadge(icon: "🔥", text: "+1 Streak", color: Color(hex: "#FF8C42"))
-                RewardBadge(icon: "💎", text: "+5 Gems",   color: Color(hex: "#1FD1C2"))
+            HStack(spacing: 10) {
+                RewardBadgeView(icon: "🔥", text: "+\(result.streakDelta) Streak")
+                RewardBadgeView(icon: "💎", text: "+\(result.gemsEarned) Gems")
             }
         }
         .multilineTextAlignment(.center)
     }
 }
 
-private struct RewardBadge: View {
+// MARK: - RewardBadgeView
+
+struct RewardBadgeView: View {
     let icon: String
     let text: String
-    let color: Color
 
     var body: some View {
-        HStack(spacing: 6) {
-            Text(icon).font(.system(size: 16))
+        HStack(spacing: 5) {
+            Text(icon).font(.system(size: 15))
             Text(text)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+                .lineLimit(1)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(0.22))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        .background(Color.white.opacity(0.20))
         .clipShape(Capsule())
-        .overlay(
-            Capsule().strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
-        )
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.30), lineWidth: 1))
     }
 }
 
 // MARK: - Statistics Card
 
-private struct StatsCard: View {
+private struct StatisticsCardView: View {
+    let result: LessonResult
+
     var body: some View {
         FloatingCard {
             HStack(spacing: 0) {
-                StatColumn(value: "90%",   label: "正答率",  color: .successGreen)
-                StatDivider()
-                StatColumn(value: "1:24",  label: "解答時間", color: .primaryPurple)
-                StatDivider()
-                StatColumn(value: "7問",   label: "連続正解", color: Color(hex: "#FF8C42"))
+                StatisticItemView(
+                    value: "\(result.accuracyPercent)%",
+                    label: "正答率",
+                    color: .successGreen
+                )
+                StatisticDivider()
+                StatisticItemView(
+                    value: result.elapsedTime,
+                    label: "解答時間",
+                    color: .primaryPurple
+                )
+                StatisticDivider()
+                StatisticItemView(
+                    value: "\(result.comboCount)問",
+                    label: "連続正解",
+                    color: Color(hex: "#FF8C42")
+                )
             }
-            .padding(.vertical, 20)
+            .padding(.vertical, 18)
         }
     }
 }
 
-private struct StatColumn: View {
+// MARK: - StatisticItemView
+
+struct StatisticItemView: View {
     let value: String
     let label: String
     let color: Color
@@ -190,54 +206,62 @@ private struct StatColumn: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundColor(color)
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
             Text(label)
-                .font(.system(size: 12, weight: .regular, design: .rounded))
+                .font(.system(size: 11, weight: .regular, design: .rounded))
                 .foregroundColor(.textGray)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-private struct StatDivider: View {
+private struct StatisticDivider: View {
     var body: some View {
         Rectangle()
             .fill(Color.appBackground)
-            .frame(width: 1, height: 44)
+            .frame(width: 1, height: 40)
     }
 }
 
-// MARK: - Level Progress Card
+// MARK: - LevelProgressCardView
 
-private struct LevelProgressCard: View {
+struct LevelProgressCardView: View {
+    let result: LessonResult
     let animate: Bool
 
     var body: some View {
         FloatingCard {
-            VStack(spacing: 14) {
-                HStack {
+            VStack(spacing: 12) {
+                HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Level 5")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                        Text("Level \(result.currentLevel)")
+                            .font(.system(size: 19, weight: .bold, design: .rounded))
                             .foregroundColor(.textDark)
-                        Text("420 / 500 XP")
-                            .font(.system(size: 13, weight: .regular, design: .rounded))
+                        Text("\(result.currentXP) / \(result.levelMaxXP) XP")
+                            .font(.system(size: 12, weight: .regular, design: .rounded))
                             .foregroundColor(.textGray)
                     }
-                    Spacer()
-                    // Next level badge
-                    Text("Lv.6 まで80XP")
+                    Spacer(minLength: 8)
+                    Text("Lv.\(result.currentLevel + 1)まで\(result.xpToNextLevel)XP")
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundColor(.primaryPurple)
+                        .minimumScaleFactor(0.8)
+                        .lineLimit(1)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(Color.primaryPurple.opacity(0.1))
+                        .background(Color.primaryPurple.opacity(0.10))
                         .clipShape(Capsule())
                 }
 
-                // Animated progress bar
                 GeometryReader { geo in
+                    let totalWidth = geo.size.width
+                    let fromWidth  = totalWidth * result.priorLevelProgressFraction
+                    let toWidth    = totalWidth * result.levelProgressFraction
+
                     ZStack(alignment: .leading) {
                         Capsule()
                             .fill(Color.appBackground)
@@ -250,191 +274,223 @@ private struct LevelProgressCard: View {
                                     endPoint: .trailing
                                 )
                             )
-                            .frame(
-                                width: animate ? geo.size.width * 0.84 : geo.size.width * 0.62,
-                                height: 12
-                            )
+                            .frame(width: animate ? toWidth : fromWidth, height: 12)
                             .animation(.easeOut(duration: 1.0), value: animate)
                     }
                 }
                 .frame(height: 12)
-            }
-            .padding(20)
-        }
-    }
-}
-
-// MARK: - Achievement Unlock Card
-
-private struct AchievementUnlockCard: View {
-    var body: some View {
-        FloatingCard {
-            HStack(spacing: 16) {
-                // Badge artwork placeholder
-                ZStack {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.warmYellow.opacity(0.15))
-                        .frame(width: 68, height: 68)
-                    VStack(spacing: 3) {
-                        Text("🏅")
-                            .font(.system(size: 28))
-                        Text("[Achievement\nArtwork]")
-                            .font(.system(size: 7, weight: .medium, design: .rounded))
-                            .foregroundColor(.textGray.opacity(0.5))
-                            .multilineTextAlignment(.center)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text("NEW")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(Color.warmYellow)
-                            .clipShape(Capsule())
-                        Text("実績解除！")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundColor(.textGray)
-                    }
-                    Text("初めてのprint()")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundColor(.textDark)
-                    Text("初めてのレッスンを完了しました")
-                        .font(.system(size: 13, weight: .regular, design: .rounded))
-                        .foregroundColor(.textGray)
-                }
-
-                Spacer()
             }
             .padding(18)
         }
     }
 }
 
-// MARK: - Pyro Section
+// MARK: - AchievementUnlockCardView
 
-private struct PyroSection: View {
+struct AchievementUnlockCardView: View {
+    let achievement: LessonResult.UnlockedAchievement
+
     var body: some View {
-        HStack(spacing: 14) {
+        FloatingCard {
+            HStack(spacing: 14) {
+                // Artwork placeholder
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.warmYellow.opacity(0.14))
+                        .frame(width: 64, height: 64)
+                    VStack(spacing: 2) {
+                        Text("🏅").font(.system(size: 26))
+                        Text("[Achievement\nArtwork]")
+                            .font(.system(size: 7, weight: .medium, design: .rounded))
+                            .foregroundColor(.textGray.opacity(0.45))
+                            .multilineTextAlignment(.center)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 5) {
+                        Text("NEW")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.warmYellow)
+                            .clipShape(Capsule())
+                        Text("実績解除！")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundColor(.textGray)
+                    }
+                    Text(achievement.title)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(.textDark)
+                        .minimumScaleFactor(0.82)
+                        .lineLimit(2)
+                    Text(achievement.description)
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundColor(.textGray)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(16)
+        }
+    }
+}
+
+// MARK: - Pyro Encouragement
+
+private struct PyroEncouragementView: View {
+    let message: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            // Mascot placeholder
             ZStack {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.22))
-                    .frame(width: 60, height: 60)
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.20))
+                    .frame(width: 56, height: 56)
                 Text("[Pyro\nMascot]")
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.system(size: 8, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.65))
                     .multilineTextAlignment(.center)
             }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("その調子！")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-                Text("Pythonが身についてきたね！\n次のレッスンも挑戦してみよう。")
+                Text(message)
                     .font(.system(size: 13, weight: .regular, design: .rounded))
                     .foregroundColor(.white.opacity(0.88))
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(18)
-        .background(Color.white.opacity(0.16))
-        .cornerRadius(20)
+        .padding(16)
+        .background(Color.white.opacity(0.15))
+        .cornerRadius(18)
     }
 }
 
-// MARK: - CTA Section
+// MARK: - CTA
 
-private struct CTASection: View {
+private struct ResultCTAView: View {
     let onNext:  () -> Void
     let onLater: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Button(action: onNext) {
                 Text("次のレッスンへ")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundColor(.textDark)
+                    .minimumScaleFactor(0.85)
+                    .lineLimit(1)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 60)
+                    .frame(height: 58)
                     .background(Color.white)
                     .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.10), radius: 12, x: 0, y: 6)
+                    .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 5)
             }
 
             Button(action: onLater) {
                 Text("あとで")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundColor(.white.opacity(0.85))
             }
+            .padding(.vertical, 4)
         }
     }
 }
 
-// MARK: - Confetti Layer (premium, subtle)
+// MARK: - Confetti (12 static pieces, pre-computed durations)
 
 private struct ConfettiLayer: View {
-    let drifting: Bool
 
     private struct Piece: Identifiable {
         let id: Int
         let color: Color
-        let x: CGFloat
-        let y: CGFloat
+        let x, y: CGFloat
         let rotation: Double
-        let size: CGSize
+        let width, height: CGFloat
         let isCircle: Bool
-        let driftX: CGFloat
-        let driftY: CGFloat
+        let driftX, driftY: CGFloat
+        let duration: Double
+        let delay: Double
     }
 
+    // durations and delays are fixed constants — no random() in body
     private let pieces: [Piece] = [
-        Piece(id:  0, color: .white,             x: -120, y: -340, rotation:  18, size: CGSize(width:  7, height: 18), isCircle: false, driftX:  6, driftY: 12),
-        Piece(id:  1, color: Color(hex:"#FFD66B"),x:  100, y: -300, rotation: -22, size: CGSize(width:  9, height: 12), isCircle: false, driftX: -8, driftY: 10),
-        Piece(id:  2, color: .white.opacity(0.6),x:  -60, y: -200, rotation:  40, size: CGSize(width:  8, height:  8), isCircle: true,  driftX:  4, driftY: 14),
-        Piece(id:  3, color: Color(hex:"#5C44F5"),x:  140, y: -160, rotation: -12, size: CGSize(width: 10, height: 14), isCircle: false, driftX: -5, driftY:  9),
-        Piece(id:  4, color: .white,             x:   50, y: -380, rotation:  55, size: CGSize(width:  6, height: 20), isCircle: false, driftX:  7, driftY: 16),
-        Piece(id:  5, color: Color(hex:"#FF6B6B"),x: -140, y: -120, rotation: -30, size: CGSize(width:  9, height:  9), isCircle: true,  driftX: -3, driftY: 11),
-        Piece(id:  6, color: .white.opacity(0.5),x:  120, y: -240, rotation:   8, size: CGSize(width:  7, height: 16), isCircle: false, driftX:  5, driftY: 13),
-        Piece(id:  7, color: Color(hex:"#FFD66B"),x:  -90, y: -80,  rotation:  25, size: CGSize(width: 11, height:  7), isCircle: false, driftX: -6, driftY:  8),
-        Piece(id:  8, color: .white,             x:   80, y: -420, rotation: -45, size: CGSize(width:  6, height:  6), isCircle: true,  driftX:  9, driftY: 18),
-        Piece(id:  9, color: Color(hex:"#5C44F5"),x: -110, y: -280, rotation:  15, size: CGSize(width:  8, height: 18), isCircle: false, driftX: -4, driftY: 12),
-        Piece(id: 10, color: Color(hex:"#FF6B6B"),x:  160, y: -50,  rotation: -35, size: CGSize(width: 10, height: 10), isCircle: true,  driftX:  3, driftY:  7),
-        Piece(id: 11, color: .white.opacity(0.7),x:  -30, y: -460, rotation:  60, size: CGSize(width:  7, height: 14), isCircle: false, driftX:  8, driftY: 20),
+        Piece(id:  0, color: .white,                    x: -118, y: -338, rotation:  18, width:  7, height: 18, isCircle: false, driftX:  6, driftY: 11, duration: 2.8, delay: 0.0),
+        Piece(id:  1, color: Color(hex: "#FFD66B"),     x:  102, y: -298, rotation: -22, width:  9, height: 12, isCircle: false, driftX: -8, driftY: 10, duration: 3.3, delay: 0.3),
+        Piece(id:  2, color: .white.opacity(0.55),      x:  -58, y: -198, rotation:  40, width:  8, height:  8, isCircle: true,  driftX:  4, driftY: 14, duration: 2.6, delay: 0.7),
+        Piece(id:  3, color: Color(hex: "#5C44F5"),     x:  142, y: -158, rotation: -12, width: 10, height: 14, isCircle: false, driftX: -5, driftY:  9, duration: 3.1, delay: 0.2),
+        Piece(id:  4, color: .white,                    x:   52, y: -378, rotation:  55, width:  6, height: 20, isCircle: false, driftX:  7, driftY: 15, duration: 2.9, delay: 0.5),
+        Piece(id:  5, color: Color(hex: "#FF6B6B"),     x: -138, y: -118, rotation: -30, width:  9, height:  9, isCircle: true,  driftX: -3, driftY: 11, duration: 3.4, delay: 0.1),
+        Piece(id:  6, color: .white.opacity(0.50),      x:  122, y: -238, rotation:   8, width:  7, height: 16, isCircle: false, driftX:  5, driftY: 13, duration: 2.7, delay: 0.6),
+        Piece(id:  7, color: Color(hex: "#FFD66B"),     x:  -88, y:  -78, rotation:  25, width: 11, height:  7, isCircle: false, driftX: -6, driftY:  8, duration: 3.2, delay: 0.4),
+        Piece(id:  8, color: .white,                    x:   82, y: -418, rotation: -45, width:  6, height:  6, isCircle: true,  driftX:  9, driftY: 17, duration: 2.5, delay: 0.8),
+        Piece(id:  9, color: Color(hex: "#5C44F5"),     x: -108, y: -278, rotation:  15, width:  8, height: 18, isCircle: false, driftX: -4, driftY: 12, duration: 3.0, delay: 0.2),
+        Piece(id: 10, color: Color(hex: "#FF6B6B"),     x:  158, y:  -48, rotation: -35, width: 10, height: 10, isCircle: true,  driftX:  3, driftY:  7, duration: 3.5, delay: 0.9),
+        Piece(id: 11, color: .white.opacity(0.65),      x:  -28, y: -458, rotation:  60, width:  7, height: 14, isCircle: false, driftX:  8, driftY: 19, duration: 2.6, delay: 0.3),
     ]
+
+    // One boolean triggers all pieces; each piece's animation modifier
+    // carries its own duration + delay, so no DispatchQueue needed.
+    @State private var phase = false
 
     var body: some View {
         ZStack {
             ForEach(pieces) { p in
-                Group {
-                    if p.isCircle {
-                        Circle().fill(p.color).frame(width: p.size.width, height: p.size.height)
-                    } else {
-                        Rectangle().fill(p.color).frame(width: p.size.width, height: p.size.height).cornerRadius(2)
-                    }
-                }
-                .rotationEffect(.degrees(p.rotation))
-                .offset(
-                    x: p.x + (drifting ? p.driftX : 0),
-                    y: p.y + (drifting ? p.driftY : 0)
-                )
-                .animation(
-                    .easeInOut(duration: Double.random(in: 2.5...4.0))
-                    .repeatForever(autoreverses: true)
-                    .delay(Double.random(in: 0...1.0)),
-                    value: drifting
-                )
-                .opacity(0.75)
+                confettiShape(for: p)
+                    .rotationEffect(.degrees(p.rotation))
+                    .offset(x: p.x + (phase ? p.driftX : 0),
+                            y: p.y + (phase ? p.driftY : 0))
+                    .animation(
+                        .easeInOut(duration: p.duration)
+                        .repeatForever(autoreverses: true)
+                        .delay(p.delay),
+                        value: phase
+                    )
+                    .opacity(0.72)
             }
+        }
+        .onAppear { phase = true }
+    }
+
+    @ViewBuilder
+    private func confettiShape(for p: Piece) -> some View {
+        if p.isCircle {
+            Circle()
+                .fill(p.color)
+                .frame(width: p.width, height: p.height)
+        } else {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(p.color)
+                .frame(width: p.width, height: p.height)
         }
     }
 }
 
+// MARK: - Appear modifier helper
+
+private extension View {
+    func appear(_ appeared: Bool, scale: Bool = false, delay: Double = 0) -> some View {
+        self
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 14)
+            .scaleEffect(scale ? (appeared ? 1 : 0.86) : 1)
+            .animation(.spring(response: 0.5, dampingFraction: 0.72).delay(delay), value: appeared)
+    }
+}
+
+// MARK: - Preview
+
 #Preview {
-    ResultView()
+    ResultView(result: .preview)
         .environmentObject(AppState())
 }
