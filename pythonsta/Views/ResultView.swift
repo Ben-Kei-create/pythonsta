@@ -298,13 +298,10 @@ struct AchievementUnlockCardView: View {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(Color.warmYellow.opacity(0.14))
                         .frame(width: 64, height: 64)
-                    VStack(spacing: 2) {
-                        Text("🏅").font(.system(size: 26))
-                        Text("[Achievement\nArtwork]")
-                            .font(.system(size: 7, weight: .medium, design: .rounded))
-                            .foregroundColor(.textGray.opacity(0.45))
-                            .multilineTextAlignment(.center)
-                    }
+                    Text("[Achievement\nArtwork]")
+                        .font(.system(size: 8, weight: .medium, design: .rounded))
+                        .foregroundColor(.textGray.opacity(0.45))
+                        .multilineTextAlignment(.center)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
