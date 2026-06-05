@@ -93,10 +93,10 @@ struct HomeView: View {
             }
 
             AppTabBar(selectedIndex: selectedTab) { index in
-                if index == 3 {
-                    appState.navigate(to: .profile)
-                } else {
-                    selectedTab = index
+                switch index {
+                case 1: appState.navigate(to: .ranking)
+                case 3: appState.navigate(to: .profile)
+                default: selectedTab = index
                 }
             }
             .padding(.horizontal, 20)

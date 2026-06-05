@@ -28,6 +28,9 @@ struct ContentView: View {
             case .profile:
                 ProfileView()
                     .transition(.opacity)
+            case .ranking:
+                RankingView()
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)

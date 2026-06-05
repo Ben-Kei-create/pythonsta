@@ -44,7 +44,11 @@ struct ProfileView: View {
             }
 
             AppTabBar(selectedIndex: 3) { index in
-                if index == 0 { appState.navigate(to: .home) }
+                switch index {
+                case 0: appState.navigate(to: .home)
+                case 1: appState.navigate(to: .ranking)
+                default: break
+                }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
