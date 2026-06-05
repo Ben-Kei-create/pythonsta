@@ -197,7 +197,7 @@ private struct UserRankSummaryCard: View {
     }
 }
 
-// MARK: - Top Three Podium Card
+// MARK: - Top Three Card
 
 private struct TopThreeRankingCard: View {
     let top3: [RankingUser]
@@ -213,15 +213,15 @@ private struct TopThreeRankingCard: View {
                     .padding(.top, 14)
                     .padding(.bottom, 12)
 
-                HStack(alignment: .bottom, spacing: 0) {
+                HStack(alignment: .top, spacing: 8) {
                     if top3.count > 1 {
-                        PodiumColumn(user: top3[1], podiumHeight: 70, rankLabel: "2位", barColor: Color(hex: "#A8B3C8"))
+                        TopRankColumn(user: top3[1], rankLabel: "2位")
                     }
                     if top3.count > 0 {
-                        PodiumColumn(user: top3[0], podiumHeight: 96, rankLabel: "1位", barColor: Color(hex: "#FFB800"))
+                        TopRankColumn(user: top3[0], rankLabel: "1位", isFirst: true)
                     }
                     if top3.count > 2 {
-                        PodiumColumn(user: top3[2], podiumHeight: 52, rankLabel: "3位", barColor: Color(hex: "#D4895A"))
+                        TopRankColumn(user: top3[2], rankLabel: "3位")
                     }
                 }
                 .padding(.horizontal, 12)
@@ -231,14 +231,19 @@ private struct TopThreeRankingCard: View {
     }
 }
 
-private struct PodiumColumn: View {
+private struct TopRankColumn: View {
     let user: RankingUser
-    let podiumHeight: CGFloat
     let rankLabel: String
-    let barColor: Color
+    var isFirst: Bool = false
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
+            Text(rankLabel)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(isFirst ? .primaryPurple : .textGray)
+                .minimumScaleFactor(0.85)
+                .lineLimit(1)
+
             // Profile image placeholder — text only
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
@@ -273,20 +278,13 @@ private struct PodiumColumn: View {
                 .foregroundColor(.textGray)
                 .minimumScaleFactor(0.8)
                 .lineLimit(1)
-
-            // Podium bar
-            ZStack(alignment: .top) {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(barColor.opacity(0.85))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: podiumHeight)
-                Text(rankLabel)
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.top, 8)
-            }
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            isFirst ? Color.primaryPurple.opacity(0.05) : Color.appBackground
+        )
+        .cornerRadius(12)
     }
 }
 
