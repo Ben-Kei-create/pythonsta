@@ -11,7 +11,6 @@ enum Screen {
     case welcome, home, lesson, result
 }
 
-@MainActor
 final class AppState: ObservableObject {
     @Published var currentScreen: Screen = .welcome
 
