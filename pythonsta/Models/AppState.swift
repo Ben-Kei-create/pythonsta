@@ -41,8 +41,8 @@ final class AppState: ObservableObject {
     // MARK: - Lesson completion
 
     // Batch-updates all progress from a completed lesson in one save.
-    // NOTE: LessonResult.preview is passed by LessonView until real per-question
-    // result data is wired; the underlying counters (XP, gems, streak) are real.
+    // `result` carries real session data (XP, gems, accuracy, combo, elapsed time)
+    // built by LessonView.buildResult() after all questions are answered.
     func completeLesson(result: LessonResult) {
         progress.totalXP += result.xpEarned
         progress.levelCurrentXP += result.xpEarned

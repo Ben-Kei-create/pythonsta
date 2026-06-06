@@ -17,7 +17,12 @@ private struct LessonNode: Identifiable {
 }
 
 private enum NodeState {
-    case completed, current, locked, perfect
+    case completed, current, locked
+    // .perfect is reserved for future per-lesson accuracy tracking
+    // (e.g. all questions answered correctly on the first attempt).
+    // nodeState() does not yet return .perfect; LessonNodeView handles it
+    // defensively so it will render correctly when the feature is added.
+    case perfect
 }
 
 private struct LessonSection: Identifiable {
@@ -61,6 +66,9 @@ struct HomeView: View {
                     DailyProgressCard(progress: appState.progress)
                         .padding(.horizontal, 20)
 
+                    // v1: displays the first course as a single linear learning path.
+                    // courses[0] is safe — LessonDataSource.courses is a non-empty static constant.
+                    // Multi-course navigation (e.g. a course selection screen) is planned for a future sprint.
                     LearningPathSection(
                         course: LessonDataSource.courses[0],
                         completedCount: appState.progress.completedLessons,
@@ -121,7 +129,13 @@ private struct HomeHeader: View {
 
 private struct DailyProgressCard: View {
     let progress: UserProgress
-    private let dailyGoal = 5
+
+    // Daily goal = 10 questions (≈ 1 lesson per day).
+    // Reaching the goal completes the daily badge but does NOT cap learning.
+    // Users may continue studying indefinitely; XP, gems, and unlocks keep accumulating.
+    // AD POLICY: interstitial ads appear only after a completed lesson/session,
+    // never between questions. Premium users see no interstitial ads.
+    private let dailyGoal = 10
 
     private var dailyFraction: Double {
         min(Double(progress.dailyCompletedLessons) / Double(dailyGoal), 1.0)

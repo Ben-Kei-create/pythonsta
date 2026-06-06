@@ -9,13 +9,30 @@
 //  ═══════════════════════════════════════════════════════════════════════
 //  Target lessons:   130
 //  Target questions: 1300  (≈ 10 questions per lesson)
-//  Daily learning:   ≈ 5 questions/day  →  ≈ 260 active days to complete
+//  Session design:   1 lesson ≈ 10 questions ≈ 8–15 minutes
+//  Daily goal:       10 questions (≈ 1 lesson) — soft goal only; no cap
+//                    Users may continue learning indefinitely after goal
+//  Curriculum time:  ≈ 130 active days at 10 questions/day
 //  Outcome:          Learners can read and write practical Python code
 //                    used in real-world projects.
 //
 //  CURRENT STATE: SEED DATA ONLY
-//  Lessons:   5  (of 130 target)
-//  Questions: 25 (of 1300 target)
+//  Lessons:   5  (of 130 target; orders 0–4)
+//  Questions: 25 (of 1300 target; 5 per lesson)
+//
+//  SEED DATA EXHAUSTION BEHAVIOR
+//  After completing all 5 seed lessons (completedLessons = 5), HomeView shows
+//  all nodes as .completed and no .current node. This is correct: the next
+//  lessons (orders 5–9) have not been written yet. Users simply reach the end
+//  of available content. No crash, no misleading state. Once lessons 5–9 are
+//  added to PythonBasics.swift, the .current node at order 5 appears automatically.
+//
+//  ADVERTISING POLICY (document only; not yet implemented in code)
+//  - Interstitial ads appear only after a lesson/session completes (ResultView).
+//  - Ads must NEVER appear between questions or mid-lesson.
+//  - Premium users: no interstitial ads; learning flow is fully uninterrupted.
+//  - Implementation: inject an ad-trigger flag into LessonResult or AppState
+//    at the ResultView transition point when ad infrastructure is added.
 //
 //  ═══════════════════════════════════════════════════════════════════════
 //  CURRICULUM ROADMAP  (17 major topics × ~8 lessons × 10 questions)

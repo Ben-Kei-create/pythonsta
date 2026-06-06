@@ -44,9 +44,22 @@ struct LessonView: View {
     @State private var sessionStart: Date = Date()
 
     private var lesson: Lesson { appState.currentLesson }
+
+    // Safe only after the empty-questions guard in `body` passes.
     private var question: Question { lesson.questions[currentQuestionIndex] }
 
     var body: some View {
+        // Guard against a lesson with no questions (e.g. a stub lesson added before
+        // its content is written). Shows a clean fallback instead of crashing.
+        if lesson.questions.isEmpty {
+            LessonUnavailableFallback(onBack: { appState.navigate(to: .home) })
+        } else {
+            lessonBody
+        }
+    }
+
+    @ViewBuilder
+    private var lessonBody: some View {
         ZStack(alignment: .bottom) {
             Color.appBackground.ignoresSafeArea()
 
@@ -156,6 +169,10 @@ struct LessonView: View {
         let message = accuracy >= 80
             ? "すごい！よく頑張ったね！\n次のレッスンも挑戦しよう。"
             : "惜しい！もう少しで完璧！\n復習してまた挑戦しよう。"
+        // NOTE: currentLevel and levelMaxXP are snapped here, before completeLesson
+        // calls applyLevelUps(). If this lesson causes a level-up, the result screen
+        // briefly shows the pre-lesson level. This is a known minor display inconsistency
+        // and does not affect any persisted values.
         return LessonResult(
             xpEarned: earnedXP,
             gemsEarned: earnedGems,
@@ -650,6 +667,39 @@ private struct RewardPill: View {
         .padding(.vertical, 5)
         .background(Color.white.opacity(0.2))
         .clipShape(Capsule())
+    }
+}
+
+// MARK: - Unavailable Fallback
+
+// Shown when appState.currentLesson.questions is empty (e.g. a stub lesson added
+// before its content is written). Prevents an out-of-bounds crash on `questions[0]`.
+private struct LessonUnavailableFallback: View {
+    let onBack: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.appBackground.ignoresSafeArea()
+            VStack(spacing: 24) {
+                Image(systemName: "exclamationmark.circle")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundColor(.textGray.opacity(0.5))
+                Text("このレッスンはまだ準備中です")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundColor(.textDark)
+                Button(action: onBack) {
+                    Text("ホームに戻る")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.primaryPurple)
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 40)
+            }
+            .padding(24)
+        }
     }
 }
 
