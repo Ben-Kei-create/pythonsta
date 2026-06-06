@@ -21,7 +21,7 @@ struct ProfileView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
-                    ProfileScreenHeader()
+                    ProfileScreenHeader(onSettings: { appState.navigate(to: .settings) })
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
 
@@ -68,19 +68,23 @@ struct ProfileView: View {
 // MARK: - Screen Header
 
 private struct ProfileScreenHeader: View {
+    let onSettings: () -> Void
+
     var body: some View {
         HStack {
             Text("プロフィール")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundColor(.textDark)
             Spacer()
-            Image(systemName: "gearshape.fill")
-                .font(.system(size: 18))
-                .foregroundColor(.textGray)
-                .frame(width: 40, height: 40)
-                .background(Color.white)
-                .cornerRadius(12)
-                .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
+            Button(action: onSettings) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.textGray)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
+            }
         }
     }
 }

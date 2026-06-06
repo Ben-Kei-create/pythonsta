@@ -14,6 +14,9 @@ struct ContentView: View {
     var body: some View {
         Group {
             switch appState.currentScreen {
+            case .splash:
+                SplashView()
+                    .transition(.opacity)
             case .welcome:
                 WelcomeView()
                     .transition(.opacity)
@@ -37,6 +40,9 @@ struct ContentView: View {
                     .transition(.opacity)
             case .shop:
                 ShopView()
+                    .transition(.opacity)
+            case .settings:
+                SettingsView()
                     .transition(.opacity)
             }
         }

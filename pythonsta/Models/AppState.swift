@@ -10,11 +10,11 @@ import Combine
 
 
 enum Screen {
-    case welcome, home, lesson, result, profile, ranking, collection, shop
+    case splash, welcome, home, lesson, result, profile, ranking, collection, shop, settings
 }
 
 final class AppState: ObservableObject {
-    @Published var currentScreen: Screen = .welcome
+    @Published var currentScreen: Screen = .splash
     @Published var currentResult: LessonResult = .preview
     @Published var currentLesson: Lesson = LessonDataSource.defaultLesson
     @Published private(set) var progress: UserProgress
@@ -123,6 +123,20 @@ final class AppState: ObservableObject {
         recordActivity(questionCount: 0)
         save()
     }
+
+    // MARK: - Debug utilities
+
+    #if DEBUG
+    // Wipes all persisted data and restarts from the welcome screen.
+    // Exposed only in debug builds via the Developer section of SettingsView.
+    func resetAllProgress() {
+        store.reset()
+        progress = .newUser
+        currentLesson = LessonDataSource.defaultLesson
+        currentResult = .preview
+        navigate(to: .welcome)
+    }
+    #endif
 
     // MARK: - Computed UserProfile
 
