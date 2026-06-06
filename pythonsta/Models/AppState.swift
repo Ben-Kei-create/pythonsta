@@ -14,6 +14,7 @@ enum Screen {
 final class AppState: ObservableObject {
     @Published var currentScreen: Screen = .welcome
     @Published var currentResult: LessonResult = .preview
+    @Published var currentLesson: Lesson = LessonDataSource.defaultLesson
     @Published private(set) var progress: UserProgress
 
     private let store = UserProgressStore()
@@ -30,6 +31,11 @@ final class AppState: ObservableObject {
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = screen
         }
+    }
+
+    func startLesson(_ lesson: Lesson) {
+        currentLesson = lesson
+        navigate(to: .lesson)
     }
 
     // MARK: - Lesson completion

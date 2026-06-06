@@ -7,30 +7,14 @@
 
 import SwiftUI
 
-// MARK: - Lesson data
-
-private struct AnswerChoice: Identifiable {
-    let id: Int
-    let text: String
-}
-
-private let answers: [AnswerChoice] = [
-    AnswerChoice(id: 0, text: "文字を表示する"),
-    AnswerChoice(id: 1, text: "計算する"),
-    AnswerChoice(id: 2, text: "保存する"),
-    AnswerChoice(id: 3, text: "終了する"),
-]
-
-private let correctAnswerID = 0
-
 // MARK: - Answer state
 
 private enum AnswerState {
     case idle, selected(Int), submitted(Int)
 
-    var selectedID: Int? {
+    var selectedIndex: Int? {
         switch self {
-        case .selected(let id), .submitted(let id): return id
+        case .selected(let i), .submitted(let i): return i
         default: return nil
         }
     }
@@ -46,34 +30,49 @@ private enum AnswerState {
 struct LessonView: View {
     @EnvironmentObject var appState: AppState
 
+    @State private var currentQuestionIndex: Int = 0
     @State private var answerState: AnswerState = .idle
     @State private var showSheet = false
     @State private var isCorrect = false
+
+    // Session tracking
+    @State private var earnedXP: Int = 0
+    @State private var earnedGems: Int = 0
+    @State private var correctCount: Int = 0
+    @State private var currentCombo: Int = 0
+    @State private var maxCombo: Int = 0
+    @State private var sessionStart: Date = Date()
+
+    private var lesson: Lesson { appState.currentLesson }
+    private var question: Question { lesson.questions[currentQuestionIndex] }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Top bar
-                LessonTopBar(hearts: appState.progress.hearts, onBack: { appState.navigate(to: .home) })
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
+                LessonTopBar(
+                    hearts: appState.progress.hearts,
+                    currentQuestion: currentQuestionIndex + 1,
+                    totalQuestions: lesson.questions.count,
+                    onBack: { appState.navigate(to: .home) }
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
 
-                // Scrollable content
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        // Main lesson card
-                        LessonCard()
+                        LessonCard(question: question, category: lesson.category)
 
-                        // Answer choices
                         AnswerArea(
+                            choices: question.choices,
+                            correctAnswer: question.correctAnswer,
                             answerState: answerState,
-                            onSelect: { id in
+                            onSelect: { index in
                                 guard !answerState.isSubmitted else { return }
                                 withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                                    answerState = .selected(id)
+                                    answerState = .selected(index)
                                 }
                             }
                         )
@@ -90,7 +89,7 @@ struct LessonView: View {
             VStack(spacing: 0) {
                 Spacer()
                 ConfirmButton(
-                    isEnabled: answerState.selectedID != nil,
+                    isEnabled: answerState.selectedIndex != nil,
                     onTap: submitAnswer
                 )
                 .padding(.horizontal, 24)
@@ -102,36 +101,80 @@ struct LessonView: View {
             if showSheet {
                 ResultBottomSheet(
                     isCorrect: isCorrect,
-                    onNext: {
-                        if isCorrect {
-                            // Progress is updated (XP, gems, streak, completedLessons).
-                            // LessonResult.preview is used until per-question result data is wired.
-                            appState.completeLesson(result: .preview)
-                        } else {
-                            withAnimation {
-                                showSheet    = false
-                                answerState  = .idle
-                            }
-                        }
-                    }
+                    question: question,
+                    onNext: handleNext
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .zIndex(10)
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.75), value: showSheet)
+        .onAppear { sessionStart = Date() }
     }
 
+    // MARK: - Actions
+
     private func submitAnswer() {
-        guard let selectedID = answerState.selectedID else { return }
-        isCorrect = (selectedID == correctAnswerID)
+        guard let selectedIndex = answerState.selectedIndex else { return }
+        let selectedText = question.choices[selectedIndex]
+        isCorrect = (selectedText == question.correctAnswer)
         if !isCorrect { appState.loseHeart() }
-        withAnimation {
-            answerState = .submitted(selectedID)
-        }
+        withAnimation { answerState = .submitted(selectedIndex) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             withAnimation { showSheet = true }
         }
+    }
+
+    private func handleNext() {
+        if isCorrect {
+            earnedXP += question.xpReward
+            earnedGems += question.gemReward
+            correctCount += 1
+            currentCombo += 1
+            maxCombo = max(maxCombo, currentCombo)
+        } else {
+            currentCombo = 0
+        }
+
+        let nextIndex = currentQuestionIndex + 1
+        if nextIndex < lesson.questions.count {
+            withAnimation {
+                showSheet = false
+                answerState = .idle
+                currentQuestionIndex = nextIndex
+            }
+        } else {
+            appState.completeLesson(result: buildResult())
+        }
+    }
+
+    private func buildResult() -> LessonResult {
+        let total = lesson.questions.count
+        let accuracy = total > 0 ? Int(Double(correctCount) / Double(total) * 100) : 0
+        let elapsed = formatElapsed(from: sessionStart)
+        let title = accuracy >= 80 ? "レッスンクリア！" : "レッスン完了！"
+        let message = accuracy >= 80
+            ? "すごい！よく頑張ったね！\n次のレッスンも挑戦しよう。"
+            : "惜しい！もう少しで完璧！\n復習してまた挑戦しよう。"
+        return LessonResult(
+            xpEarned: earnedXP,
+            gemsEarned: earnedGems,
+            streakDelta: 1,
+            accuracyPercent: accuracy,
+            elapsedTime: elapsed,
+            comboCount: maxCombo,
+            currentLevel: appState.progress.currentLevel,
+            currentXP: appState.progress.levelCurrentXP + earnedXP,
+            levelMaxXP: appState.progress.currentLevelMaxXP,
+            successTitle: title,
+            encouragementMessage: message,
+            unlockedAchievement: nil
+        )
+    }
+
+    private func formatElapsed(from start: Date) -> String {
+        let secs = Int(Date().timeIntervalSince(start))
+        return String(format: "%d:%02d", secs / 60, secs % 60)
     }
 }
 
@@ -139,6 +182,8 @@ struct LessonView: View {
 
 private struct LessonTopBar: View {
     let hearts: Int
+    let currentQuestion: Int
+    let totalQuestions: Int
     let onBack: () -> Void
 
     var body: some View {
@@ -157,12 +202,16 @@ private struct LessonTopBar: View {
 
             VStack(spacing: 6) {
                 HStack {
-                    Text("3 / 10")
+                    Text("\(currentQuestion) / \(totalQuestions)")
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundColor(.textGray)
                     Spacer()
                 }
-                RoundedProgressBar(value: 0.3, color: .primaryPurple, height: 8)
+                RoundedProgressBar(
+                    value: Double(currentQuestion - 1) / Double(max(totalQuestions, 1)),
+                    color: .primaryPurple,
+                    height: 8
+                )
             }
 
             HStack(spacing: 3) {
@@ -179,12 +228,15 @@ private struct LessonTopBar: View {
 // MARK: - Lesson Card
 
 private struct LessonCard: View {
+    let question: Question
+    let category: String
+
     var body: some View {
         FloatingCard {
             VStack(spacing: 20) {
                 // Category pill
                 HStack {
-                    Text("Python基礎")
+                    Text(category)
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundColor(.primaryPurple)
                         .padding(.horizontal, 12)
@@ -194,29 +246,18 @@ private struct LessonCard: View {
                     Spacer()
                 }
 
-                // Question text
-                Text("print()は\n何をする命令でしょう？")
+                // Question prompt
+                Text(question.prompt)
                     .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundColor(.textDark)
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                // Illustration placeholder
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.primaryPurple.opacity(0.06))
-                        .frame(height: 148)
-                    VStack(spacing: 6) {
-                        Text("🖼")
-                            .font(.system(size: 36))
-                        Text("[Lesson Illustration]")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundColor(.textGray.opacity(0.6))
-                    }
+                if let snippet = question.codeSnippet {
+                    CodeBlock(code: snippet)
+                } else {
+                    LessonIllustrationPlaceholder()
                 }
-
-                // Code hint block
-                CodeHintBlock()
             }
             .padding(22)
         }
@@ -225,7 +266,22 @@ private struct LessonCard: View {
     }
 }
 
-private struct CodeHintBlock: View {
+private struct LessonIllustrationPlaceholder: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.primaryPurple.opacity(0.06))
+                .frame(height: 100)
+            Text("[Lesson Illustration]")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.textGray.opacity(0.6))
+        }
+    }
+}
+
+private struct CodeBlock: View {
+    let code: String
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Title strip
@@ -243,25 +299,16 @@ private struct CodeHintBlock: View {
             .background(Color(hex: "#141B2A"))
             .cornerRadius(12, corners: [.topLeft, .topRight])
 
-            // Code
-            HStack {
-                Group {
-                    Text("print")
-                        .foregroundColor(Color(hex: "#C792EA"))
-                    + Text("(")
-                        .foregroundColor(.white.opacity(0.8))
-                    + Text("\"Hello, Python!\"")
-                        .foregroundColor(.warmYellow)
-                    + Text(")")
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                .font(.system(size: 15, weight: .regular, design: .monospaced))
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
-            .background(Color.textDark)
-            .cornerRadius(12, corners: [.bottomLeft, .bottomRight])
+            // Code body
+            Text(code)
+                .font(.system(size: 14, weight: .regular, design: .monospaced))
+                .foregroundColor(.white.opacity(0.9))
+                .lineSpacing(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .background(Color.textDark)
+                .cornerRadius(12, corners: [.bottomLeft, .bottomRight])
         }
     }
 }
@@ -269,34 +316,34 @@ private struct CodeHintBlock: View {
 // MARK: - Answer Area
 
 private struct AnswerArea: View {
+    let choices: [String]
+    let correctAnswer: String
     let answerState: AnswerState
     let onSelect: (Int) -> Void
 
     var body: some View {
         VStack(spacing: 10) {
-            ForEach(answers) { answer in
+            ForEach(Array(choices.enumerated()), id: \.offset) { index, text in
                 AnswerCard(
-                    answer: answer,
-                    state: cardState(for: answer.id),
-                    onTap: { onSelect(answer.id) }
+                    text: text,
+                    state: cardState(for: index),
+                    onTap: { onSelect(index) }
                 )
             }
         }
     }
 
-    private func cardState(for id: Int) -> AnswerCardState {
+    private func cardState(for index: Int) -> AnswerCardState {
         switch answerState {
         case .idle:
             return .normal
-
         case .selected(let selected):
-            return id == selected ? .selected : .normal
-
+            return index == selected ? .selected : .normal
         case .submitted(let selected):
-            if id == selected {
-                return id == correctAnswerID ? .correct : .wrong
+            if index == selected {
+                return choices[selected] == correctAnswer ? .correct : .wrong
             }
-            if id == correctAnswerID { return .correct }
+            if choices[index] == correctAnswer { return .correct }
             return .normal
         }
     }
@@ -307,7 +354,7 @@ private enum AnswerCardState {
 }
 
 private struct AnswerCard: View {
-    let answer: AnswerChoice
+    let text: String
     let state: AnswerCardState
     let onTap: () -> Void
 
@@ -316,7 +363,6 @@ private struct AnswerCard: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                // State icon
                 ZStack {
                     Circle()
                         .fill(iconBackground)
@@ -326,9 +372,11 @@ private struct AnswerCard: View {
                         .foregroundColor(iconForeground)
                 }
 
-                Text(answer.text)
+                Text(text)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundColor(textColor)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
 
                 Spacer()
             }
@@ -370,9 +418,7 @@ private struct AnswerCard: View {
         }
     }
 
-    private var borderWidth: CGFloat {
-        state == .normal ? 0 : 2
-    }
+    private var borderWidth: CGFloat { state == .normal ? 0 : 2 }
 
     private var textColor: Color {
         switch state {
@@ -447,6 +493,7 @@ private struct ConfirmButton: View {
 
 private struct ResultBottomSheet: View {
     let isCorrect: Bool
+    let question: Question
     let onNext: () -> Void
 
     var body: some View {
@@ -454,7 +501,6 @@ private struct ResultBottomSheet: View {
             Spacer()
 
             VStack(spacing: 0) {
-                // Handle
                 Capsule()
                     .fill(Color.white.opacity(0.3))
                     .frame(width: 40, height: 4)
@@ -462,18 +508,25 @@ private struct ResultBottomSheet: View {
 
                 VStack(spacing: 16) {
                     if isCorrect {
-                        CorrectContent(onNext: onNext)
+                        CorrectContent(
+                            explanation: question.explanation,
+                            xpReward: question.xpReward,
+                            gemReward: question.gemReward,
+                            onNext: onNext
+                        )
                     } else {
-                        WrongContent(onNext: onNext)
+                        WrongContent(
+                            explanation: question.explanation,
+                            correctAnswer: question.correctAnswer,
+                            onNext: onNext
+                        )
                     }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
                 .padding(.bottom, 40)
             }
-            .background(
-                isCorrect ? Color(hex: "#1EB87A") : Color(hex: "#E8455A")
-            )
+            .background(isCorrect ? Color(hex: "#1EB87A") : Color(hex: "#E8455A"))
             .cornerRadius(32, corners: [.topLeft, .topRight])
         }
         .ignoresSafeArea(edges: .bottom)
@@ -481,6 +534,9 @@ private struct ResultBottomSheet: View {
 }
 
 private struct CorrectContent: View {
+    let explanation: String
+    let xpReward: Int
+    let gemReward: Int
     let onNext: () -> Void
 
     var body: some View {
@@ -492,11 +548,11 @@ private struct CorrectContent: View {
                         .foregroundColor(.white)
 
                     HStack(spacing: 10) {
-                        RewardPill(icon: "🔥", text: "+10 XP")
-                        RewardPill(icon: "💎", text: "+1 Gem")
+                        RewardPill(icon: "🔥", text: "+\(xpReward) XP")
+                        RewardPill(icon: "💎", text: "+\(gemReward) Gem")
                     }
 
-                    Text("print() は画面に文字を表示するための命令だよ！")
+                    Text(explanation)
                         .font(.system(size: 14, weight: .regular, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)
@@ -505,7 +561,6 @@ private struct CorrectContent: View {
 
                 Spacer()
 
-                // Pyro mascot placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.15))
@@ -531,6 +586,8 @@ private struct CorrectContent: View {
 }
 
 private struct WrongContent: View {
+    let explanation: String
+    let correctAnswer: String
     let onNext: () -> Void
 
     var body: some View {
@@ -541,7 +598,7 @@ private struct WrongContent: View {
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
-                    Text("正解は「文字を表示する」だよ。\nprint() はテキストを画面に出力するよ！")
+                    Text("正解は「\(correctAnswer)」だよ。\n\(explanation)")
                         .font(.system(size: 14, weight: .regular, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)

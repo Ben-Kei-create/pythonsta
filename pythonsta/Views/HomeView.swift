@@ -26,26 +26,6 @@ private struct LessonSection: Identifiable {
     let nodes: [LessonNode]
 }
 
-private let learningPath: [LessonSection] = [
-    LessonSection(id: 0, title: "Python基礎", nodes: [
-        LessonNode(id: 0,  label: "print()",  sublabel: "出力",   state: .perfect),
-        LessonNode(id: 1,  label: "変数",      sublabel: "データ保存", state: .completed),
-        LessonNode(id: 2,  label: "データ型",  sublabel: "種類",   state: .current),
-    ]),
-    LessonSection(id: 1, title: "条件分岐", nodes: [
-        LessonNode(id: 3,  label: "if文",      sublabel: "判断",   state: .locked),
-        LessonNode(id: 4,  label: "比較",      sublabel: "演算子", state: .locked),
-    ]),
-    LessonSection(id: 2, title: "繰り返し", nodes: [
-        LessonNode(id: 5,  label: "for文",     sublabel: "ループ", state: .locked),
-        LessonNode(id: 6,  label: "while",     sublabel: "条件",  state: .locked),
-    ]),
-    LessonSection(id: 3, title: "関数", nodes: [
-        LessonNode(id: 7,  label: "関数",      sublabel: "def",   state: .locked),
-        LessonNode(id: 8,  label: "引数",      sublabel: "値渡し", state: .locked),
-    ]),
-]
-
 private struct Achievement: Identifiable {
     let id: Int
     let title: String
@@ -81,9 +61,11 @@ struct HomeView: View {
                     DailyProgressCard(progress: appState.progress)
                         .padding(.horizontal, 20)
 
-                    LearningPathSection(onStartLesson: {
-                        appState.navigate(to: .lesson)
-                    })
+                    LearningPathSection(
+                        course: LessonDataSource.courses[0],
+                        completedCount: appState.progress.completedLessons,
+                        onStartLesson: { lesson in appState.startLesson(lesson) }
+                    )
                     .padding(.horizontal, 20)
 
                     AchievementsSection()
@@ -202,49 +184,77 @@ private struct StatItem: View {
 // MARK: - Learning Path
 
 private struct LearningPathSection: View {
-    let onStartLesson: () -> Void
+    let course: Course
+    let completedCount: Int
+    let onStartLesson: (Lesson) -> Void
 
-    // Alternating horizontal offsets for a playful zigzag
     private let offsets: [CGFloat] = [-44, 0, 44, 0, -44, 0, 44, 0, -44, 0]
+
+    private var sections: [LessonSection] {
+        var categoryOrder: [String] = []
+        var categoryMap: [String: [Lesson]] = [:]
+        for lesson in course.lessons {
+            if categoryMap[lesson.category] == nil {
+                categoryOrder.append(lesson.category)
+                categoryMap[lesson.category] = []
+            }
+            categoryMap[lesson.category]!.append(lesson)
+        }
+        return categoryOrder.enumerated().map { sectionIndex, category in
+            let lessons = categoryMap[category] ?? []
+            let nodes = lessons.map { lesson in
+                LessonNode(
+                    id: lesson.id,
+                    label: lesson.shortLabel,
+                    sublabel: lesson.subtitle,
+                    state: nodeState(for: lesson.order)
+                )
+            }
+            return LessonSection(id: sectionIndex, title: category, nodes: nodes)
+        }
+    }
+
+    private func nodeState(for order: Int) -> NodeState {
+        if order < completedCount { return .completed }
+        if order == completedCount { return .current }
+        return .locked
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(Array(learningPath.enumerated()), id: \.offset) { sIndex, section in
-                // Section label
+            ForEach(Array(sections.enumerated()), id: \.offset) { sIndex, section in
                 SectionLabel(title: section.title)
                     .padding(.bottom, 20)
 
-                // Nodes in this section
                 ForEach(Array(section.nodes.enumerated()), id: \.element.id) { nIndex, node in
-                    let globalIndex = learningPath.prefix(sIndex).flatMap { $0.nodes }.count + nIndex
+                    let globalIndex = sections.prefix(sIndex).flatMap { $0.nodes }.count + nIndex
                     let xOffset = offsets[min(globalIndex, offsets.count - 1)]
-                    let isLast = (nIndex == section.nodes.count - 1) && (sIndex == learningPath.count - 1)
+                    let isLast = (nIndex == section.nodes.count - 1) && (sIndex == sections.count - 1)
 
                     VStack(spacing: 0) {
                         LessonNodeView(node: node, onTap: {
-                            if node.state == .current { onStartLesson() }
+                            if node.state == .current {
+                                if let lesson = course.lessons.first(where: { $0.id == node.id }) {
+                                    onStartLesson(lesson)
+                                }
+                            }
                         })
                         .offset(x: xOffset)
 
                         if !isLast {
                             ConnectorLine(
                                 fromOffset: xOffset,
-                                toOffset: nextOffset(globalIndex: globalIndex, sectionIndex: sIndex, nodeIndex: nIndex, section: section)
+                                toOffset: offsets[min(globalIndex + 1, offsets.count - 1)]
                             )
                         }
                     }
                 }
 
-                if sIndex < learningPath.count - 1 {
+                if sIndex < sections.count - 1 {
                     Spacer().frame(height: 8)
                 }
             }
         }
-    }
-
-    private func nextOffset(globalIndex: Int, sectionIndex: Int, nodeIndex: Int, section: LessonSection) -> CGFloat {
-        let nextGlobal = globalIndex + 1
-        return offsets[min(nextGlobal, offsets.count - 1)]
     }
 }
 
