@@ -55,7 +55,10 @@ struct LessonView: View {
         if question.type == .fillInBlank {
             return !fillAnswer.trimmingCharacters(in: .whitespaces).isEmpty && !fillSubmitted
         }
-        return answerState.selectedIndex != nil
+        // Guard on isSubmitted: `.submitted(i)` still returns a non-nil selectedIndex,
+        // so without this check a rapid double-tap during the 0.35s pre-sheet delay
+        // would call submitAnswer() twice and deduct two hearts for one wrong answer.
+        return answerState.selectedIndex != nil && !answerState.isSubmitted
     }
 
     var body: some View {
