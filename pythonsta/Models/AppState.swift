@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Combine
+
 
 enum Screen {
     case welcome, home, lesson, result, profile, ranking, collection, shop
