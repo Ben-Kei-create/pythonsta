@@ -72,11 +72,14 @@ struct UserProgressStore {
 
     // MARK: - Reset (development only)
 
-    // Call from the Xcode console or a debug menu to wipe all saved progress:
+    // Wipes all saved progress. Only compiled into Debug builds.
+    // Call from the Xcode debugger console or a temporary debug menu:
     //   UserProgressStore().reset()
+    #if DEBUG
     func reset() {
         [Key.hasData, Key.totalXP, Key.gems, Key.currentStreak, Key.completedLessons,
          Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyLessons,
          Key.lastActiveDate, Key.hearts].forEach { defaults.removeObject(forKey: $0) }
     }
+    #endif
 }

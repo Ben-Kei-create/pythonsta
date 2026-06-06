@@ -78,6 +78,14 @@ final class AppState: ObservableObject {
         save()
     }
 
+    // Restores `count` hearts, capped at the maximum of 5.
+    // Use for single-heart restorations (ad reward, gem purchase, etc.).
+    func restoreHeart(_ count: Int = 1) {
+        progress.hearts = min(5, progress.hearts + max(count, 0))
+        save()
+    }
+
+    // Refills all hearts to 5. Use for full-refill purchases.
     func resetHearts() {
         progress.hearts = 5
         save()
