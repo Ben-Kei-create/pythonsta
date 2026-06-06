@@ -5,7 +5,7 @@
 //  Created by 茂木史明 on 2026/06/05.
 //
 //  Single source of truth for achievement definitions and unlock conditions.
-//  IDs 0–11 match CollectionAchievement and UserProgress.unlockedAchievementIDs.
+//  IDs 0–13 match CollectionAchievement and UserProgress.unlockedAchievementIDs.
 //
 //  Condition mapping (lesson orders vs. completedLessons):
 //    After lesson order N completes, completedLessons == N+1.
@@ -14,6 +14,8 @@
 //    ID 7 (条件分岐の達人)   : completedLessons >= 4  (order 3 = if文 done)
 //    ID 8 (ループ職人)       : completedLessons >= 5  (order 4 = for文 done)
 //    ID 6, 10               : always false — future lessons / tracking not yet built
+//    ID 12 (3日連続達成)     : currentStreak >= 3
+//    ID 13 (今日の目標達成)  : dailyCompletedQuestions >= dailyGoal (checked after lesson)
 //
 
 import Foundation
@@ -98,6 +100,18 @@ enum AchievementCatalog {
               description: "全レッスンをクリアした",
               category: "特別",
               condition: { p, _ in p.completedLessons >= LessonDataSource.totalLessonCount }),
+
+        .init(id: 12, title: "3日連続達成",    subtitle: "3日連続学習",
+              description: "3日間連続で学習した",
+              category: "連続",
+              condition: { p, _ in p.currentStreak >= 3 }),
+
+        // Fires on any lesson that pushes dailyCompletedQuestions to or past dailyGoal.
+        // dailyGoal guard (> 0) prevents spurious unlock before onboarding sets the goal.
+        .init(id: 13, title: "今日の目標達成", subtitle: "1日の目標クリア",
+              description: "1日の学習目標を達成した",
+              category: "学習",
+              condition: { p, _ in p.dailyGoal > 0 && p.dailyCompletedQuestions >= p.dailyGoal }),
     ]
 
     // MARK: - Queries
