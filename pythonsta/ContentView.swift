@@ -34,6 +34,9 @@ struct ContentView: View {
             case .collection:
                 CollectionView()
                     .transition(.opacity)
+            case .shop:
+                ShopView()
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)

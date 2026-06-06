@@ -160,6 +160,13 @@ struct LessonView: View {
                 onGoHome: {
                     showNoHeartsSheet = false
                     appState.navigate(to: .home)
+                },
+                onGetGems: {
+                    // Navigating to shop abandons the lesson (same effect as going home).
+                    // navigate() guards .lesson → previousScreen becomes .home,
+                    // so the shop back button returns to home, not the stale session.
+                    showNoHeartsSheet = false
+                    appState.navigate(to: .shop)
                 }
             )
             .presentationDetents([.medium])
@@ -817,6 +824,7 @@ private struct NoHeartsSheet: View {
     let gems: Int
     let onSpendGems: () -> Void
     let onGoHome: () -> Void
+    let onGetGems: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -876,6 +884,17 @@ private struct NoHeartsSheet: View {
                                 .strokeBorder(Color.textGray.opacity(0.2), lineWidth: 1.5)
                         )
                 }
+
+                Button(action: onGetGems) {
+                    HStack(spacing: 5) {
+                        Text("💎")
+                            .font(.system(size: 13))
+                        Text("ジェムを入手する →")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.primaryPurple)
+                    }
+                }
+                .padding(.top, 4)
             }
             .padding(.horizontal, 24)
             .padding(.top, 28)

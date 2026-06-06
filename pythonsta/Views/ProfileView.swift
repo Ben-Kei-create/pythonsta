@@ -28,8 +28,11 @@ struct ProfileView: View {
                     ProfileHeroCard(profile: profile)
                         .padding(.horizontal, 20)
 
-                    LifetimeStatsCard(profile: profile)
-                        .padding(.horizontal, 20)
+                    LifetimeStatsCard(
+                        profile: profile,
+                        onShopTap: { appState.navigate(to: .shop) }
+                    )
+                    .padding(.horizontal, 20)
 
                     LessonCompletionCard(profile: profile)
                         .padding(.horizontal, 20)
@@ -162,6 +165,7 @@ private struct ProfileHeroCard: View {
 
 private struct LifetimeStatsCard: View {
     let profile: UserProfile
+    let onShopTap: () -> Void
 
     var body: some View {
         FloatingCard {
@@ -181,11 +185,16 @@ private struct LifetimeStatsCard: View {
                 }
                 ProfileStatDividerH()
                 HStack(spacing: 0) {
-                    ProfileStatCell(
-                        value: "\(profile.gems)",
-                        label: "Gems",
-                        color: .appTeal
-                    )
+                    // Gems cell is tappable — navigates to the gem shop.
+                    Button(action: onShopTap) {
+                        ProfileStatCell(
+                            value: "\(profile.gems)",
+                            label: "Gems ›",
+                            color: .appTeal
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
                     ProfileStatDividerV()
                     ProfileStatCell(
                         value: profile.formattedLearningTime,

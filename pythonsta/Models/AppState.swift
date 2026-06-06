@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Screen {
-    case welcome, home, lesson, result, profile, ranking, collection
+    case welcome, home, lesson, result, profile, ranking, collection, shop
 }
 
 final class AppState: ObservableObject {
@@ -16,6 +16,11 @@ final class AppState: ObservableObject {
     @Published var currentResult: LessonResult = .preview
     @Published var currentLesson: Lesson = LessonDataSource.defaultLesson
     @Published private(set) var progress: UserProgress
+
+    // Tracks the screen to return to when ShopView's back button is tapped.
+    // .lesson is excluded: navigating away from an active lesson abandons it,
+    // so the shop back button should return to .home rather than a stale session.
+    private(set) var previousScreen: Screen = .home
 
     private let store = UserProgressStore()
 
@@ -28,6 +33,7 @@ final class AppState: ObservableObject {
     // MARK: - Navigation
 
     func navigate(to screen: Screen) {
+        previousScreen = (currentScreen == .lesson) ? .home : currentScreen
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = screen
         }
