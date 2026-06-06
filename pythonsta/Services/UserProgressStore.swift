@@ -33,6 +33,8 @@ struct UserProgressStore {
         static let dailyQuestions     = "progress.dailyQuestions"
         static let lastActiveDate     = "progress.lastActiveDate"
         static let hearts             = "progress.hearts"
+        static let dailyGoal          = "progress.dailyGoal"
+        static let hasCompletedOnboarding = "progress.hasCompletedOnboarding"
     }
 
     // MARK: - Load
@@ -42,6 +44,17 @@ struct UserProgressStore {
         // Without it, integer(forKey:) returns 0 for every unset field,
         // making it impossible to distinguish "never saved" from "saved as 0".
         guard defaults.bool(forKey: Key.hasData) else { return .newUser }
+
+        // dailyGoal: integer(forKey:) returns 0 for unset keys (upgrade path).
+        //   0 is not a valid goal (min 5), so treat 0 as "not set yet" → default 10.
+        let savedGoal = defaults.integer(forKey: Key.dailyGoal)
+
+        // hasCompletedOnboarding: for existing users upgrading (hasData=true but key unset),
+        //   object(forKey:) returns nil → treat as onboarded so they skip onboarding.
+        let onboardingKey = defaults.object(forKey: Key.hasCompletedOnboarding)
+        let hasCompletedOnboarding = onboardingKey != nil
+            ? defaults.bool(forKey: Key.hasCompletedOnboarding)
+            : true   // upgrade: existing user already has progress, skip onboarding
 
         return UserProgress(
             totalXP:                defaults.integer(forKey: Key.totalXP),
@@ -53,7 +66,9 @@ struct UserProgressStore {
             unlockedAchievementIDs: defaults.array(forKey: Key.achievementIDs) as? [Int] ?? [],
             dailyCompletedQuestions: defaults.integer(forKey: Key.dailyQuestions),
             lastActiveDateString:   defaults.string(forKey: Key.lastActiveDate) ?? "",
-            hearts:                 defaults.integer(forKey: Key.hearts)
+            hearts:                 defaults.integer(forKey: Key.hearts),
+            dailyGoal:              savedGoal >= 5 ? savedGoal : 10,
+            hasCompletedOnboarding: hasCompletedOnboarding
         )
     }
 
@@ -71,6 +86,8 @@ struct UserProgressStore {
         defaults.set(progress.dailyCompletedQuestions, forKey: Key.dailyQuestions)
         defaults.set(progress.lastActiveDateString,    forKey: Key.lastActiveDate)
         defaults.set(progress.hearts,                  forKey: Key.hearts)
+        defaults.set(progress.dailyGoal,               forKey: Key.dailyGoal)
+        defaults.set(progress.hasCompletedOnboarding,  forKey: Key.hasCompletedOnboarding)
     }
 
     // MARK: - Reset (development only)
@@ -82,7 +99,8 @@ struct UserProgressStore {
     func reset() {
         [Key.hasData, Key.totalXP, Key.gems, Key.currentStreak, Key.completedLessons,
          Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyQuestions,
-         Key.lastActiveDate, Key.hearts].forEach { defaults.removeObject(forKey: $0) }
+         Key.lastActiveDate, Key.hearts, Key.dailyGoal,
+         Key.hasCompletedOnboarding].forEach { defaults.removeObject(forKey: $0) }
     }
     #endif
 }

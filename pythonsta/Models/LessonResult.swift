@@ -40,6 +40,25 @@ struct LessonResult {
         let description: String
     }
 
+    // Returns a copy of this result with `unlockedAchievement` replaced.
+    // Used by AppState.completeLesson() to attach newly unlocked achievements.
+    func with(unlockedAchievement: UnlockedAchievement?) -> LessonResult {
+        LessonResult(
+            xpEarned: xpEarned,
+            gemsEarned: gemsEarned,
+            streakDelta: streakDelta,
+            accuracyPercent: accuracyPercent,
+            elapsedTime: elapsedTime,
+            comboCount: comboCount,
+            currentLevel: currentLevel,
+            currentXP: currentXP,
+            levelMaxXP: levelMaxXP,
+            successTitle: successTitle,
+            encouragementMessage: encouragementMessage,
+            unlockedAchievement: unlockedAchievement
+        )
+    }
+
     static let preview = LessonResult(
         xpEarned: 50,
         gemsEarned: 5,

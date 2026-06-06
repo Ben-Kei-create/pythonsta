@@ -83,7 +83,7 @@ struct WelcomeView: View {
 
                     // Primary CTA
                     Button {
-                        appState.navigate(to: .home)
+                        appState.navigateAfterWelcome()
                     } label: {
                         Text("はじめる")
                             .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -101,7 +101,7 @@ struct WelcomeView: View {
 
                     // Secondary CTA
                     Button("ログイン") {
-                        appState.navigate(to: .home)
+                        appState.navigateAfterWelcome()
                     }
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundColor(.white.opacity(0.90))

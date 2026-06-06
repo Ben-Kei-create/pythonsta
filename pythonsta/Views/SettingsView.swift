@@ -75,7 +75,7 @@ struct SettingsView: View {
                                 icon: "target",
                                 iconColor: .snakeGreen,
                                 label: "1日の目標",
-                                value: "10問"
+                                value: "\(appState.progress.dailyGoal)問"
                             )
                             SettingsDivider()
                             SettingsToggleRow(

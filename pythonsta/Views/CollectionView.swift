@@ -13,7 +13,9 @@ struct CollectionView: View {
     @EnvironmentObject var appState: AppState
 
     @State private var selectedFilter: Int = 0
-    private let achievements: [CollectionAchievement] = CollectionAchievement.previewList
+    private var achievements: [CollectionAchievement] {
+        AchievementCatalog.collectionAchievements(unlockedIDs: appState.progress.unlockedAchievementIDs)
+    }
 
     private var earnedCount: Int {
         achievements.filter { $0.isUnlocked }.count

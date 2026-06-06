@@ -18,10 +18,14 @@ struct UserProgress {
     var levelCurrentXP: Int = 0
     var unlockedAchievementIDs: [Int] = []
     // Number of questions answered today (resets on new calendar day).
-    // Daily goal = 10 questions (soft target; no cap on learning or XP).
+    // Soft target — no cap; users can learn beyond their goal.
     var dailyCompletedQuestions: Int = 0
     var lastActiveDateString: String = ""   // "yyyy-MM-dd", locale-independent
     var hearts: Int = 5
+    // User-chosen daily question target, set during onboarding. Min 5.
+    var dailyGoal: Int = 10
+    // False on first install; set to true by AppState.completeOnboarding().
+    var hasCompletedOnboarding: Bool = false
 
     // XP threshold to advance from `level` to `level + 1`.
     static func levelMaxXP(for level: Int) -> Int { max(level, 1) * 100 }

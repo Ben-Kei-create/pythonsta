@@ -10,7 +10,7 @@ import Combine
 
 
 enum Screen {
-    case splash, welcome, home, lesson, result, profile, ranking, collection, shop, settings
+    case splash, welcome, onboarding, home, lesson, result, profile, ranking, collection, shop, settings
 }
 
 final class AppState: ObservableObject {
@@ -46,6 +46,19 @@ final class AppState: ObservableObject {
         navigate(to: .lesson)
     }
 
+    // Routes from WelcomeView: first-time users go to Onboarding, returning users to Home.
+    func navigateAfterWelcome() {
+        navigate(to: progress.hasCompletedOnboarding ? .home : .onboarding)
+    }
+
+    // Called by OnboardingView on completion. Persists the chosen goal and marks onboarding done.
+    func completeOnboarding(dailyGoal: Int) {
+        progress.dailyGoal = max(5, dailyGoal)
+        progress.hasCompletedOnboarding = true
+        save()
+        navigate(to: .home)
+    }
+
     // MARK: - Lesson completion
 
     // Batch-updates all progress from a completed lesson in one save.
@@ -59,9 +72,28 @@ final class AppState: ObservableObject {
         progress.completedLessons += 1
         // Credit the exact number of questions answered in this lesson toward the daily goal.
         recordActivity(questionCount: currentLesson.questions.count)
+
+        // Check and batch-unlock achievements with fully updated progress.
+        // Appended directly here so the single save() below persists everything atomically.
+        let newIDs = AchievementCatalog.newlyUnlocked(progress: progress, result: result)
+        for id in newIDs where !progress.unlockedAchievementIDs.contains(id) {
+            progress.unlockedAchievementIDs.append(id)
+        }
+
         save()
 
-        currentResult = result
+        // Attach the first newly-unlocked achievement to the result for ResultView display.
+        let enrichedResult = newIDs
+            .compactMap { AchievementCatalog.definition(for: $0) }
+            .first
+            .map { def in
+                result.with(unlockedAchievement: .init(title: def.title, description: def.description))
+            } ?? result
+
+        // Ad display trigger — frequency cap enforced inside AdManager.
+        AdManager.shared.showInterstitialIfReady()
+
+        currentResult = enrichedResult
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = .result
         }
@@ -142,7 +174,6 @@ final class AppState: ObservableObject {
 
     // Bridges persisted UserProgress into the UserProfile shape that ProfileView expects.
     // displayName / username remain hardcoded until an auth system is added.
-    // achievements ([]) is mock until achievement unlock tracking is wired to unlockAchievement.
     // totalLearningMinutes (0) is mock until in-lesson time tracking is added.
     var userProfile: UserProfile {
         UserProfile(
@@ -157,7 +188,7 @@ final class AppState: ObservableObject {
             totalLearningMinutes: 0,
             completedLessons: progress.completedLessons,
             totalLessons: LessonDataSource.totalLessonCount,
-            achievements: []
+            achievements: AchievementCatalog.profileAchievements(unlockedIDs: progress.unlockedAchievementIDs)
         )
     }
 

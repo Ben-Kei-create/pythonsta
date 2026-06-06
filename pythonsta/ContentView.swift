@@ -20,6 +20,9 @@ struct ContentView: View {
             case .welcome:
                 WelcomeView()
                     .transition(.opacity)
+            case .onboarding:
+                OnboardingView()
+                    .transition(.opacity)
             case .home:
                 HomeView()
                     .transition(.opacity)
