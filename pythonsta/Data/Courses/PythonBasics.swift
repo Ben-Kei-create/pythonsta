@@ -8,9 +8,9 @@
 //  Course ID: 0
 //  Lesson ID range:   0–9    (10 lessons at full scale; 5 seed lessons now)
 //  Lesson order range: 0–9   (globally unique; drives unlock sequencing)
-//  Question ID range: 0–99   (100 questions at full scale; 25 seed questions now)
+//  Question ID range: 0–99   (100 questions at full scale; 50 seed questions now)
 //
-//  SEED STATE: 5 lessons / 25 questions
+//  SEED STATE: 5 lessons / 50 questions  (10 per lesson)
 //  TARGET:     10 lessons / 100 questions
 //
 //  HOW TO ADD A LESSON
@@ -49,7 +49,7 @@ private let lesson0 = Lesson(
     subtitle: "出力",
     category: "Python基礎",
     order: 0,
-    questions: [q0, q1, q2, q3, q4],
+    questions: [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9],
     requiredXP: 0
 )
 
@@ -113,6 +113,66 @@ private let q4 = Question(
     gemReward: 1
 )
 
+private let q5 = Question(
+    id: 5,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "print(3 * 4)",
+    choices: ["12", "7", "34", "エラー"],
+    correctAnswer: "12",
+    explanation: "print() は計算式も評価して出力するよ。3 × 4 = 12 だよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q6 = Question(
+    id: 6,
+    type: .multipleChoice,
+    prompt: "print() に複数の値を\n渡したときの区切りは？",
+    codeSnippet: nil,
+    choices: ["スペース（半角）", "カンマ", "改行", "タブ"],
+    correctAnswer: "スペース（半角）",
+    explanation: "print(a, b) のように複数の値を渡すと、半角スペースで区切って表示されるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q7 = Question(
+    id: 7,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "name = \"Python\"\nprint(\"言語:\", name)",
+    choices: ["言語: Python", "言語:Python", "\"言語:\", name", "エラー"],
+    correctAnswer: "言語: Python",
+    explanation: "print() に文字列と変数を一緒に渡すと、スペースで区切って表示されるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q8 = Question(
+    id: 8,
+    type: .multipleChoice,
+    prompt: "print() で数値と\n文字列を同時に出力できる？",
+    codeSnippet: nil,
+    choices: ["できる", "できない", "int()が必要", "str()が必要"],
+    correctAnswer: "できる",
+    explanation: "print() はカンマ区切りで何種類でも混ぜて出力できるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q9 = Question(
+    id: 9,
+    type: .fillInBlank,
+    prompt: "\"Hello\" と \"World\" を\nつなげて出力するには？",
+    codeSnippet: "print(\"Hello\" _____ \"World\")",
+    choices: ["+", ",", "&", "."],
+    correctAnswer: "+",
+    explanation: "文字列同士を + でつなげることを「文字列の結合」というよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
 // ─────────────────────────────────────────────────────────
 // MARK: - Lesson 1 · 変数を使おう
 // ─────────────────────────────────────────────────────────
@@ -124,7 +184,7 @@ private let lesson1 = Lesson(
     subtitle: "データ保存",
     category: "Python基礎",
     order: 1,
-    questions: [q10, q11, q12, q13, q14],
+    questions: [q10, q11, q12, q13, q14, q15, q16, q17, q18, q19],
     requiredXP: 50
 )
 
@@ -188,6 +248,66 @@ private let q14 = Question(
     gemReward: 1
 )
 
+private let q15 = Question(
+    id: 15,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "x = 10\ny = 3\nprint(x - y)",
+    choices: ["7", "13", "103", "エラー"],
+    correctAnswer: "7",
+    explanation: "x - y は 10 - 3 = 7 だよ。変数を使った引き算もできるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q16 = Question(
+    id: 16,
+    type: .multipleChoice,
+    prompt: "変数に新しい値を\n代入したら？",
+    codeSnippet: nil,
+    choices: ["前の値は上書きされる", "両方保存される", "エラーになる", "変数が増える"],
+    correctAnswer: "前の値は上書きされる",
+    explanation: "Pythonの変数は上書き可能で、新しい値を代入すると前の値は消えるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q17 = Question(
+    id: 17,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "x = 5\nx = x + 1\nprint(x)",
+    choices: ["6", "5", "x + 1", "エラー"],
+    correctAnswer: "6",
+    explanation: "x = x + 1 は現在の x の値（5）に 1 を足して x に代入するよ。結果は 6 だよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q18 = Question(
+    id: 18,
+    type: .multipleChoice,
+    prompt: "変数に保存できるデータは？",
+    codeSnippet: nil,
+    choices: ["数値・文字列・真偽値など", "数値だけ", "文字列だけ", "整数だけ"],
+    correctAnswer: "数値・文字列・真偽値など",
+    explanation: "Pythonの変数には int・float・str・bool などさまざまな型のデータを保存できるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q19 = Question(
+    id: 19,
+    type: .fillInBlank,
+    prompt: "空欄に入るのは？",
+    codeSnippet: "score = 100\nprint(_____)",
+    choices: ["score", "\"score\"", "100", "int"],
+    correctAnswer: "score",
+    explanation: "変数の値を表示するには、\"\" なしで変数名をそのまま print() に渡すよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
 // ─────────────────────────────────────────────────────────
 // MARK: - Lesson 2 · 型を理解しよう
 // ─────────────────────────────────────────────────────────
@@ -199,7 +319,7 @@ private let lesson2 = Lesson(
     subtitle: "型の種類",
     category: "Python基礎",
     order: 2,
-    questions: [q20, q21, q22, q23, q24],
+    questions: [q20, q21, q22, q23, q24, q25, q26, q27, q28, q29],
     requiredXP: 100
 )
 
@@ -263,6 +383,66 @@ private let q24 = Question(
     gemReward: 1
 )
 
+private let q25 = Question(
+    id: 25,
+    type: .multipleChoice,
+    prompt: "int(\"42\") の結果は？",
+    codeSnippet: nil,
+    choices: ["整数の42", "文字列の\"42\"", "42.0", "エラー"],
+    correctAnswer: "整数の42",
+    explanation: "int() は文字列や小数を整数に変換するよ。\"42\" → 42 になるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q26 = Question(
+    id: 26,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "print(type(\"hello\"))",
+    choices: ["<class 'str'>", "<class 'int'>", "str", "hello"],
+    correctAnswer: "<class 'str'>",
+    explanation: "\"hello\" は文字列なので type() は <class 'str'> を返すよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q27 = Question(
+    id: 27,
+    type: .multipleChoice,
+    prompt: "1 + 1.0 の結果の型は？",
+    codeSnippet: nil,
+    choices: ["float", "int", "str", "bool"],
+    correctAnswer: "float",
+    explanation: "整数と小数を足すと結果は float になるよ。Pythonは自動で型を昇格させるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q28 = Question(
+    id: 28,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "print(type(True))",
+    choices: ["<class 'bool'>", "<class 'int'>", "<class 'str'>", "True"],
+    correctAnswer: "<class 'bool'>",
+    explanation: "True と False は bool 型だよ。type(True) は <class 'bool'> を返すよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q29 = Question(
+    id: 29,
+    type: .fillInBlank,
+    prompt: "変数の型を調べるには？",
+    codeSnippet: "print(_____(3.14))",
+    choices: ["type", "str", "int", "float"],
+    correctAnswer: "type",
+    explanation: "type() 関数に値や変数を渡すとデータ型を調べられるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
 // ─────────────────────────────────────────────────────────
 // MARK: - Lesson 3 · if文を使おう
 // ─────────────────────────────────────────────────────────
@@ -274,7 +454,7 @@ private let lesson3 = Lesson(
     subtitle: "判断",
     category: "条件分岐",
     order: 3,
-    questions: [q30, q31, q32, q33, q34],
+    questions: [q30, q31, q32, q33, q34, q35, q36, q37, q38, q39],
     requiredXP: 150
 )
 
@@ -338,6 +518,66 @@ private let q34 = Question(
     gemReward: 1
 )
 
+private let q35 = Question(
+    id: 35,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "x = 5\nif x == 5:\n    print(\"同じ\")",
+    choices: ["同じ", "違う", "5", "何も表示されない"],
+    correctAnswer: "同じ",
+    explanation: "== は「等しい」を確認する演算子だよ。x は 5 なので True になり「同じ」が表示されるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q36 = Question(
+    id: 36,
+    type: .multipleChoice,
+    prompt: "「等しい」を確認する\n演算子はどれ？",
+    codeSnippet: nil,
+    choices: ["==", "=", "!=", "=>"],
+    correctAnswer: "==",
+    explanation: "== が「等しい」の比較演算子だよ。= は代入、== は比較として使い分けてね！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q37 = Question(
+    id: 37,
+    type: .multipleChoice,
+    prompt: "「等しくない」を確認する\n演算子はどれ？",
+    codeSnippet: nil,
+    choices: ["!=", "<>", "=/=", "not="],
+    correctAnswer: "!=",
+    explanation: "!= が「等しくない」の比較演算子だよ。True / False を返すよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q38 = Question(
+    id: 38,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "x = 10\nif x >= 10:\n    print(\"OK\")\nelse:\n    print(\"NG\")",
+    choices: ["OK", "NG", "10", "エラー"],
+    correctAnswer: "OK",
+    explanation: "x = 10 は 10 以上なので >= の条件が True となり「OK」が表示されるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q39 = Question(
+    id: 39,
+    type: .fillInBlank,
+    prompt: "x が 5 より大きいか\n確認するには？",
+    codeSnippet: "if x _____ 5:\n    print(\"大きい\")",
+    choices: [">", ">=", "<", "=="],
+    correctAnswer: ">",
+    explanation: "> は「より大きい」を確認する比較演算子だよ。>= は「以上」だよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
 // ─────────────────────────────────────────────────────────
 // MARK: - Lesson 4 · for文を使おう
 // ─────────────────────────────────────────────────────────
@@ -349,7 +589,7 @@ private let lesson4 = Lesson(
     subtitle: "ループ",
     category: "繰り返し",
     order: 4,
-    questions: [q40, q41, q42, q43, q44],
+    questions: [q40, q41, q42, q43, q44, q45, q46, q47, q48, q49],
     requiredXP: 200
 )
 
@@ -409,6 +649,66 @@ private let q44 = Question(
     choices: ["range", "loop", "repeat", "iter"],
     correctAnswer: "range",
     explanation: "range() を使うと連続した整数の列を生成できるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q45 = Question(
+    id: 45,
+    type: .codeOutput,
+    prompt: "このコードの出力は？",
+    codeSnippet: "total = 0\nfor i in range(3):\n    total += i\nprint(total)",
+    choices: ["3", "6", "0", "エラー"],
+    correctAnswer: "3",
+    explanation: "i は 0, 1, 2 と変化するよ。0 + 1 + 2 = 3 だよ！+= は左辺に加算して代入する演算子だよ。",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q46 = Question(
+    id: 46,
+    type: .multipleChoice,
+    prompt: "break を使うと？",
+    codeSnippet: nil,
+    choices: ["ループを途中で終了する", "次の繰り返しに飛ぶ", "ループを再開する", "エラーになる"],
+    correctAnswer: "ループを途中で終了する",
+    explanation: "break はループを即座に終了するよ。continue は現在の繰り返しをスキップして次へ進むよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q47 = Question(
+    id: 47,
+    type: .multipleChoice,
+    prompt: "range(2, 5) が\n生成するのは？",
+    codeSnippet: nil,
+    choices: ["2, 3, 4", "2, 3, 4, 5", "1, 2, 3, 4", "2, 4"],
+    correctAnswer: "2, 3, 4",
+    explanation: "range(start, stop) は start から stop-1 までを生成するよ。range(2, 5) は 2, 3, 4 だよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q48 = Question(
+    id: 48,
+    type: .codeOutput,
+    prompt: "最後に表示される文字は？",
+    codeSnippet: "words = [\"A\", \"B\", \"C\"]\nfor w in words:\n    print(w)",
+    choices: ["C", "A", "B", "ABC"],
+    correctAnswer: "C",
+    explanation: "リストの各要素を順番に処理するよ。最後の要素は \"C\" なので最後に「C」が表示されるよ！",
+    xpReward: 10,
+    gemReward: 1
+)
+
+private let q49 = Question(
+    id: 49,
+    type: .fillInBlank,
+    prompt: "1 から始まるループに\nするには？",
+    codeSnippet: "for i in range(_____, 3):\n    print(i)  # 1, 2",
+    choices: ["1", "0", "2", "3"],
+    correctAnswer: "1",
+    explanation: "range(start, stop) の start を 1 にすると、1 から始まるループになるよ！",
     xpReward: 10,
     gemReward: 1
 )

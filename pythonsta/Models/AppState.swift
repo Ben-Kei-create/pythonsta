@@ -98,6 +98,16 @@ final class AppState: ObservableObject {
         save()
     }
 
+    // Deducts `amount` gems if the user has enough. Returns true on success.
+    // Use for gem-gated actions (e.g. heart recovery from NoHeartsSheet).
+    @discardableResult
+    func spendGems(_ amount: Int) -> Bool {
+        guard progress.gems >= amount else { return false }
+        progress.gems -= amount
+        save()
+        return true
+    }
+
     // Exposed for external callers (e.g. a future daily-login bonus screen).
     // Passes 0 questions — records activity for streak purposes without crediting
     // questions toward the daily goal (no questions were actually answered).
