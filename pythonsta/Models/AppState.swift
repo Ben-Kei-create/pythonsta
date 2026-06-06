@@ -51,8 +51,9 @@ final class AppState: ObservableObject {
         navigate(to: progress.hasCompletedOnboarding ? .home : .onboarding)
     }
 
-    // Called by OnboardingView on completion. Persists the chosen goal and marks onboarding done.
-    func completeOnboarding(dailyGoal: Int) {
+    // Called by OnboardingView on completion. Persists purpose + goal and marks onboarding done.
+    func completeOnboarding(learningPurpose: String, dailyGoal: Int = 10) {
+        progress.learningPurpose = learningPurpose
         progress.dailyGoal = max(5, dailyGoal)
         progress.hasCompletedOnboarding = true
         save()

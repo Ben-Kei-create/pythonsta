@@ -4,39 +4,42 @@
 //
 //  Created by 茂木史明 on 2026/06/05.
 //
-//  Two-step onboarding shown once to first-time users (after WelcomeView).
-//  Step 0 — Intro:   app value proposition on the purple gradient.
-//  Step 1 — Goal:    daily question target selection (5/10/15/20).
+//  Two-step onboarding shown once to first-time users (between WelcomeView and HomeView).
+//  Step A — Learning purpose: one of four reasons, required before advancing.
+//  Step B — Daily goal confirmation: explains 10問/日 is a soft target, not a cap.
 //
-//  On completion, calls AppState.completeOnboarding(dailyGoal:) which
-//  persists the goal, marks hasCompletedOnboarding = true, and navigates to Home.
+//  On finish, calls AppState.completeOnboarding(learningPurpose:dailyGoal:),
+//  which persists both values and navigates to Home.
 //
 
 import SwiftUI
 
-// MARK: - OnboardingView
+// MARK: - Root
 
 struct OnboardingView: View {
     @EnvironmentObject var appState: AppState
 
-    @State private var step = 0
-    @State private var selectedGoal = 10
+    @State private var step             = 0
+    @State private var selectedPurpose: String? = nil
 
     var body: some View {
         ZStack {
             if step == 0 {
-                OnboardingIntroPage(onNext: {
-                    withAnimation(.easeInOut(duration: 0.38)) { step = 1 }
-                })
+                PurposeStep(
+                    selectedPurpose: $selectedPurpose,
+                    onNext: { withAnimation(.easeInOut(duration: 0.38)) { step = 1 } }
+                )
                 .transition(.asymmetric(
                     insertion: .opacity,
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
             } else {
-                OnboardingGoalPage(
-                    selectedGoal: $selectedGoal,
-                    onComplete: { appState.completeOnboarding(dailyGoal: selectedGoal) }
-                )
+                GoalStep(onComplete: {
+                    appState.completeOnboarding(
+                        learningPurpose: selectedPurpose ?? "",
+                        dailyGoal: 10
+                    )
+                })
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .opacity
@@ -47,12 +50,26 @@ struct OnboardingView: View {
     }
 }
 
-// MARK: - Step 0: Intro
+// MARK: - Step A: Learning Purpose
 
-private struct OnboardingIntroPage: View {
+private struct PurposeStep: View {
+    @Binding var selectedPurpose: String?
     let onNext: () -> Void
 
     @State private var appeared = false
+
+    private struct Purpose {
+        let label: String
+        let icon: String
+        let color: Color
+    }
+
+    private let options: [Purpose] = [
+        Purpose(label: "仕事で使いたい",    icon: "briefcase.fill",   color: .primaryPurple),
+        Purpose(label: "副業・自動化したい", icon: "gearshape.2.fill", color: .snakeGreen),
+        Purpose(label: "AI開発をしたい",   icon: "cpu.fill",          color: .appTeal),
+        Purpose(label: "基礎から学びたい",  icon: "book.fill",         color: Color(hex: "#FF8C42")),
+    ]
 
     var body: some View {
         GeometryReader { geo in
@@ -64,69 +81,78 @@ private struct OnboardingIntroPage: View {
                 .ignoresSafeArea()
 
                 RadialGradient(
-                    colors: [Color.white.opacity(0.08), Color.clear],
+                    colors: [Color.white.opacity(0.07), Color.clear],
                     center: .top, startRadius: 0,
                     endRadius: geo.size.height * 0.5
                 )
                 .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Step indicator
-                    StepDots(current: 0, total: 2)
+                    OnboardingDots(current: 0, total: 2, dotColor: .white)
                         .padding(.top, 20)
 
                     Spacer()
 
-                    // Hero area
-                    VStack(spacing: 14) {
-                        Text("🐍")
-                            .font(.system(size: 52))
-
-                        Text("PythonStaへ\nようこそ！")
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                    // Header
+                    VStack(spacing: 10) {
+                        Text("なぜPythonを\n学びますか？")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                             .lineSpacing(3)
 
-                        Text("ゲーム感覚でPythonをマスターしよう")
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundColor(.white.opacity(0.82))
-                            .multilineTextAlignment(.center)
+                        Text("あなたの目的に合わせてサポートします")
+                            .font(.system(size: 14, weight: .regular, design: .rounded))
+                            .foregroundColor(.white.opacity(0.78))
                     }
                     .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 16)
+                    .offset(y: appeared ? 0 : 14)
+                    .animation(.easeOut(duration: 0.45), value: appeared)
 
                     Spacer()
 
-                    // Feature list
-                    VStack(spacing: 10) {
-                        FeaturePill(icon: "gamecontroller.fill",         text: "クイズ形式で楽しく学習")
-                        FeaturePill(icon: "chart.line.uptrend.xyaxis",   text: "XPとレベルで成長を実感")
-                        FeaturePill(icon: "flame.fill",                  text: "毎日の連続記録でモチベUP")
+                    // Purpose options
+                    VStack(spacing: 12) {
+                        ForEach(options, id: \.label) { option in
+                            PurposeCard(
+                                label: option.label,
+                                icon: option.icon,
+                                accentColor: option.color,
+                                isSelected: selectedPurpose == option.label,
+                                onTap: { selectedPurpose = option.label }
+                            )
+                        }
                     }
+                    .padding(.horizontal, 24)
                     .opacity(appeared ? 1 : 0)
                     .offset(y: appeared ? 0 : 10)
-                    .animation(.easeOut(duration: 0.5).delay(0.15), value: appeared)
+                    .animation(.easeOut(duration: 0.5).delay(0.10), value: appeared)
 
                     Spacer()
 
-                    // CTA
+                    // Next button — disabled until a purpose is selected
+                    let isReady = selectedPurpose != nil
                     Button(action: onNext) {
                         HStack(spacing: 6) {
                             Text("次へ")
                             Image(systemName: "arrow.right")
                         }
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(hex: "#1D2433"))
+                        .foregroundColor(isReady ? Color(hex: "#1D2433") : Color.white.opacity(0.45))
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .background(Color(hex: "#B9F238"))
+                        .background(isReady ? Color(hex: "#B9F238") : Color.white.opacity(0.14))
                         .clipShape(Capsule())
-                        .shadow(color: Color(hex: "#B9F238").opacity(0.40), radius: 14, x: 0, y: 6)
+                        .shadow(
+                            color: isReady ? Color(hex: "#B9F238").opacity(0.40) : .clear,
+                            radius: 14, x: 0, y: 6
+                        )
+                        .animation(.easeInOut(duration: 0.2), value: isReady)
                     }
+                    .disabled(!isReady)
                     .frame(width: geo.size.width * 0.80)
                     .opacity(appeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.4).delay(0.3), value: appeared)
+                    .animation(.easeOut(duration: 0.4).delay(0.22), value: appeared)
 
                     Spacer().frame(height: 52)
                 }
@@ -138,67 +164,156 @@ private struct OnboardingIntroPage: View {
     }
 }
 
-// MARK: - Step 1: Goal Selection
+// MARK: - Purpose Card
 
-private struct OnboardingGoalPage: View {
-    @Binding var selectedGoal: Int
+private struct PurposeCard: View {
+    let label: String
+    let icon: String
+    let accentColor: Color
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(isSelected ? accentColor.opacity(0.14) : Color.white.opacity(0.18))
+                        .frame(width: 46, height: 46)
+                    Image(systemName: icon)
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(isSelected ? accentColor : .white)
+                }
+
+                Text(label)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(isSelected ? .textDark : .white)
+
+                Spacer(minLength: 8)
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.snakeGreen)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(isSelected ? Color.white : Color.white.opacity(0.12))
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        isSelected ? Color.clear : Color.white.opacity(0.20),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(
+                color: isSelected ? .black.opacity(0.10) : .clear,
+                radius: 8, x: 0, y: 3
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .animation(.easeInOut(duration: 0.18), value: isSelected)
+    }
+}
+
+// MARK: - Step B: Goal Confirmation
+
+private struct GoalStep: View {
     let onComplete: () -> Void
 
-    private let goals: [(questions: Int, label: String, minutes: String, recommended: Bool)] = [
-        (5,  "入門",   "約5分/日",  false),
-        (10, "標準",   "約10分/日", true),
-        (15, "本気",   "約15分/日", false),
-        (20, "超集中", "約20分/日", false),
-    ]
+    @State private var appeared = false
 
-    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    private let bullets: [(icon: String, color: Color, text: String)] = [
+        ("arrow.up.right.circle.fill", .primaryPurple, "10問はあくまで目標。それ以上続けてもOK"),
+        ("flame.fill",                  Color(hex: "#FF8C42"), "毎日目標を達成すると連続記録が伸びます"),
+        ("gearshape.fill",              .textGray,             "設定からいつでも変更できます"),
+    ]
 
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    StepDots(current: 1, total: 2)
+                VStack(spacing: 0) {
+                    OnboardingDots(current: 1, total: 2, dotColor: .primaryPurple)
                         .padding(.top, 24)
+
+                    Spacer().frame(height: 36)
 
                     // Header
                     VStack(spacing: 8) {
-                        Text("1日の目標を決めよう")
+                        Text("1日の学習目標")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                             .foregroundColor(.textDark)
                             .multilineTextAlignment(.center)
 
-                        Text("いつでも設定から変更できます")
+                        Text("毎日コツコツ続けることが上達の近道です")
                             .font(.system(size: 14, weight: .regular, design: .rounded))
                             .foregroundColor(.textGray)
+                            .multilineTextAlignment(.center)
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 10)
+                    .animation(.easeOut(duration: 0.45), value: appeared)
 
-                    // Goal cards
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(goals, id: \.questions) { goal in
-                            GoalCard(
-                                questions: goal.questions,
-                                label: goal.label,
-                                minutes: goal.minutes,
-                                recommended: goal.recommended,
-                                isSelected: selectedGoal == goal.questions,
-                                onTap: { selectedGoal = goal.questions }
-                            )
+                    Spacer().frame(height: 28)
+
+                    // Goal card
+                    FloatingCard {
+                        HStack(spacing: 0) {
+                            // Left: 10問
+                            VStack(spacing: 4) {
+                                HStack(alignment: .lastTextBaseline, spacing: 3) {
+                                    Text("10")
+                                        .font(.system(size: 52, weight: .bold, design: .rounded))
+                                        .foregroundColor(.primaryPurple)
+                                    Text("問")
+                                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                                        .foregroundColor(.primaryPurple)
+                                }
+                                Text("1日の目標")
+                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                    .foregroundColor(.textGray)
+                            }
+                            .frame(maxWidth: .infinity)
+
+                            Rectangle()
+                                .fill(Color.appBackground)
+                                .frame(width: 1, height: 64)
+
+                            // Right: time estimate
+                            VStack(spacing: 6) {
+                                Text("≈ 10分")
+                                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                                    .foregroundColor(.textDark)
+                                Text("1レッスン分")
+                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                    .foregroundColor(.textGray)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(.vertical, 26)
+                    }
+                    .padding(.horizontal, 24)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(.easeOut(duration: 0.45).delay(0.1), value: appeared)
+
+                    Spacer().frame(height: 28)
+
+                    // Explanation bullets
+                    VStack(spacing: 0) {
+                        ForEach(bullets, id: \.text) { bullet in
+                            GoalBulletRow(icon: bullet.icon, iconColor: bullet.color, text: bullet.text)
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(.easeOut(duration: 0.45).delay(0.18), value: appeared)
 
-                    // Streak note
-                    HStack(spacing: 6) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(Color(hex: "#FF8C42"))
-                        Text("目標を達成すると連続記録が伸びます")
-                            .font(.system(size: 13, weight: .regular, design: .rounded))
-                            .foregroundColor(.textGray)
-                    }
-                    .padding(.horizontal, 20)
+                    Spacer().frame(height: 40)
 
                     // CTA
                     Button(action: onComplete) {
@@ -211,140 +326,60 @@ private struct OnboardingGoalPage: View {
                             .clipShape(Capsule())
                             .shadow(color: Color(hex: "#B9F238").opacity(0.40), radius: 14, x: 0, y: 6)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(.easeOut(duration: 0.4).delay(0.28), value: appeared)
 
-                    Spacer().frame(height: 40)
+                    Spacer().frame(height: 52)
                 }
             }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.5)) { appeared = true }
         }
     }
 }
 
-// MARK: - Goal Card
+// MARK: - Goal Bullet Row
 
-private struct GoalCard: View {
-    let questions: Int
-    let label: String
-    let minutes: String
-    let recommended: Bool
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    private let icons: [Int: String] = [
-        5: "leaf.fill", 10: "book.fill", 15: "flame.fill", 20: "bolt.fill"
-    ]
-    private let iconColors: [Int: Color] = [
-        5: .snakeGreen, 10: .primaryPurple, 15: Color(hex: "#FF8C42"), 20: .warmYellow
-    ]
+private struct GoalBulletRow: View {
+    let icon: String
+    let iconColor: Color
+    let text: String
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 10) {
-                // Recommended badge
-                if recommended {
-                    Text("おすすめ")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 3)
-                        .background(Color.primaryPurple)
-                        .clipShape(Capsule())
-                } else {
-                    Spacer().frame(height: 20) // maintain alignment
-                }
-
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(isSelected
-                              ? Color.primaryPurple.opacity(0.15)
-                              : (iconColors[questions] ?? .textGray).opacity(0.10))
-                        .frame(width: 52, height: 52)
-                    Image(systemName: icons[questions] ?? "star.fill")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(isSelected
-                                         ? .primaryPurple
-                                         : (iconColors[questions] ?? .textGray))
-                }
-
-                // Questions
-                Text("\(questions)問/日")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(isSelected ? .primaryPurple : .textDark)
-
-                // Label
-                Text(label)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(isSelected ? .primaryPurple : .textGray)
-
-                // Minutes
-                Text(minutes)
-                    .font(.system(size: 11, weight: .regular, design: .rounded))
-                    .foregroundColor(.textGray)
-            }
-            .padding(.vertical, 18)
-            .padding(.horizontal, 8)
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
-            .cornerRadius(18)
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .strokeBorder(
-                        isSelected ? Color.primaryPurple : Color.clear,
-                        lineWidth: 2
-                    )
-            )
-            .shadow(
-                color: isSelected
-                    ? Color.primaryPurple.opacity(0.18)
-                    : Color.black.opacity(0.05),
-                radius: isSelected ? 10 : 6,
-                x: 0, y: 3
-            )
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(iconColor)
+                .frame(width: 26)
+            Text(text)
+                .font(.system(size: 14, weight: .regular, design: .rounded))
+                .foregroundColor(.textDark)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
         }
-        .buttonStyle(PlainButtonStyle())
-        .animation(.easeInOut(duration: 0.18), value: isSelected)
+        .padding(.vertical, 14)
+        .overlay(Rectangle().fill(Color.appBackground).frame(height: 1), alignment: .bottom)
     }
 }
 
-// MARK: - Shared helpers
+// MARK: - Shared: Step Dots
 
-private struct StepDots: View {
+private struct OnboardingDots: View {
     let current: Int
     let total: Int
+    let dotColor: Color
 
     var body: some View {
         HStack(spacing: 8) {
             ForEach(0..<total, id: \.self) { i in
                 Capsule()
-                    .fill(i == current ? Color.white : Color.white.opacity(0.30))
+                    .fill(i == current ? dotColor : dotColor.opacity(0.30))
                     .frame(width: i == current ? 24 : 8, height: 8)
                     .animation(.easeInOut(duration: 0.25), value: current)
             }
         }
-    }
-}
-
-private struct FeaturePill: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.pythonLime)
-                .frame(width: 24)
-            Text(text)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.92))
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 13)
-        .background(Color.white.opacity(0.10))
-        .cornerRadius(14)
-        .padding(.horizontal, 28)
     }
 }
 

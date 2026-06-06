@@ -35,6 +35,7 @@ struct UserProgressStore {
         static let hearts             = "progress.hearts"
         static let dailyGoal          = "progress.dailyGoal"
         static let hasCompletedOnboarding = "progress.hasCompletedOnboarding"
+        static let learningPurpose    = "progress.learningPurpose"
     }
 
     // MARK: - Load
@@ -68,7 +69,8 @@ struct UserProgressStore {
             lastActiveDateString:   defaults.string(forKey: Key.lastActiveDate) ?? "",
             hearts:                 defaults.integer(forKey: Key.hearts),
             dailyGoal:              savedGoal >= 5 ? savedGoal : 10,
-            hasCompletedOnboarding: hasCompletedOnboarding
+            hasCompletedOnboarding: hasCompletedOnboarding,
+            learningPurpose:        defaults.string(forKey: Key.learningPurpose) ?? ""
         )
     }
 
@@ -88,6 +90,7 @@ struct UserProgressStore {
         defaults.set(progress.hearts,                  forKey: Key.hearts)
         defaults.set(progress.dailyGoal,               forKey: Key.dailyGoal)
         defaults.set(progress.hasCompletedOnboarding,  forKey: Key.hasCompletedOnboarding)
+        defaults.set(progress.learningPurpose,         forKey: Key.learningPurpose)
     }
 
     // MARK: - Reset (development only)
@@ -100,7 +103,7 @@ struct UserProgressStore {
         [Key.hasData, Key.totalXP, Key.gems, Key.currentStreak, Key.completedLessons,
          Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyQuestions,
          Key.lastActiveDate, Key.hearts, Key.dailyGoal,
-         Key.hasCompletedOnboarding].forEach { defaults.removeObject(forKey: $0) }
+         Key.hasCompletedOnboarding, Key.learningPurpose].forEach { defaults.removeObject(forKey: $0) }
     }
     #endif
 }

@@ -26,6 +26,8 @@ struct UserProgress {
     var dailyGoal: Int = 10
     // False on first install; set to true by AppState.completeOnboarding().
     var hasCompletedOnboarding: Bool = false
+    // Selected learning purpose from onboarding Step A. Empty string until onboarding completes.
+    var learningPurpose: String = ""
 
     // XP threshold to advance from `level` to `level + 1`.
     static func levelMaxXP(for level: Int) -> Int { max(level, 1) * 100 }
