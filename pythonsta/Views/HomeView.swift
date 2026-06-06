@@ -130,15 +130,16 @@ private struct HomeHeader: View {
 private struct DailyProgressCard: View {
     let progress: UserProgress
 
-    // Daily goal = 10 questions (≈ 1 lesson per day).
-    // Reaching the goal completes the daily badge but does NOT cap learning.
-    // Users may continue studying indefinitely; XP, gems, and unlocks keep accumulating.
-    // AD POLICY: interstitial ads appear only after a completed lesson/session,
-    // never between questions. Premium users see no interstitial ads.
+    // Daily goal = 10 questions (≈ 1 lesson per day, 8–15 min session).
+    // Reaching the goal fills the progress bar and marks the badge complete,
+    // but does NOT cap learning. dailyCompletedQuestions accumulates freely;
+    // extra questions still grant XP, gems, and lesson unlocks.
+    // AD POLICY: interstitial ads appear only after a lesson/session completes
+    // (ResultView), never between questions. Premium = no interstitial ads.
     private let dailyGoal = 10
 
     private var dailyFraction: Double {
-        min(Double(progress.dailyCompletedLessons) / Double(dailyGoal), 1.0)
+        min(Double(progress.dailyCompletedQuestions) / Double(dailyGoal), 1.0)
     }
 
     var body: some View {
@@ -149,10 +150,10 @@ private struct DailyProgressCard: View {
                     .foregroundColor(.textGray)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(progress.dailyCompletedLessons)")
+                    Text("\(progress.dailyCompletedQuestions)")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.textDark)
-                    Text("/ \(dailyGoal) レッスン完了")
+                    Text("/ \(dailyGoal) 問 完了")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundColor(.textGray)
                         .padding(.bottom, 4)

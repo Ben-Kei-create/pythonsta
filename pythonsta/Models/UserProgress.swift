@@ -17,7 +17,9 @@ struct UserProgress {
     var currentLevel: Int = 1
     var levelCurrentXP: Int = 0
     var unlockedAchievementIDs: [Int] = []
-    var dailyCompletedLessons: Int = 0
+    // Number of questions answered today (resets on new calendar day).
+    // Daily goal = 10 questions (soft target; no cap on learning or XP).
+    var dailyCompletedQuestions: Int = 0
     var lastActiveDateString: String = ""   // "yyyy-MM-dd", locale-independent
     var hearts: Int = 5
 

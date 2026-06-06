@@ -49,7 +49,8 @@ final class AppState: ObservableObject {
         applyLevelUps()
         progress.gems = max(0, progress.gems + result.gemsEarned)
         progress.completedLessons += 1
-        recordActivity()
+        // Credit the exact number of questions answered in this lesson toward the daily goal.
+        recordActivity(questionCount: currentLesson.questions.count)
         save()
 
         currentResult = result
@@ -98,8 +99,10 @@ final class AppState: ObservableObject {
     }
 
     // Exposed for external callers (e.g. a future daily-login bonus screen).
+    // Passes 0 questions — records activity for streak purposes without crediting
+    // questions toward the daily goal (no questions were actually answered).
     func updateStreakIfNeeded() {
-        recordActivity()
+        recordActivity(questionCount: 0)
         save()
     }
 
@@ -137,8 +140,8 @@ final class AppState: ObservableObject {
 
         var dirty = false
 
-        if progress.dailyCompletedLessons != 0 {
-            progress.dailyCompletedLessons = 0
+        if progress.dailyCompletedQuestions != 0 {
+            progress.dailyCompletedQuestions = 0
             dirty = true
         }
 
@@ -151,13 +154,16 @@ final class AppState: ObservableObject {
         if dirty { save() }
     }
 
-    // Updates streak and daily count when a lesson is completed.
-    // Called from completeLesson (via save-once batch) and updateStreakIfNeeded.
-    private func recordActivity() {
+    // Updates streak and daily question count on lesson completion.
+    // questionCount: number of questions answered in the completed lesson.
+    //   Pass 0 for non-lesson activity (daily-login streak update, etc.).
+    // Daily goal is a soft target; dailyCompletedQuestions accumulates indefinitely
+    // with no cap — extra questions beyond the goal still count.
+    private func recordActivity(questionCount: Int) {
         let today = isoDate(Date())
 
         if progress.lastActiveDateString == today {
-            progress.dailyCompletedLessons += 1
+            progress.dailyCompletedQuestions += questionCount
             return
         }
 
@@ -170,7 +176,7 @@ final class AppState: ObservableObject {
         }
 
         progress.lastActiveDateString = today
-        progress.dailyCompletedLessons += 1
+        progress.dailyCompletedQuestions += questionCount
     }
 
     private func applyLevelUps() {

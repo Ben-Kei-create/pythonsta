@@ -27,7 +27,10 @@ struct UserProgressStore {
         static let currentLevel       = "progress.currentLevel"
         static let levelCurrentXP     = "progress.levelCurrentXP"
         static let achievementIDs     = "progress.achievementIDs"
-        static let dailyLessons       = "progress.dailyLessons"
+        // Key renamed from "progress.dailyLessons" when field was changed from
+        // lesson-session count to per-question count. Existing saved dailyLessons
+        // data is intentionally abandoned (dev-only; daily counter resets each day anyway).
+        static let dailyQuestions     = "progress.dailyQuestions"
         static let lastActiveDate     = "progress.lastActiveDate"
         static let hearts             = "progress.hearts"
     }
@@ -48,7 +51,7 @@ struct UserProgressStore {
             currentLevel:           max(defaults.integer(forKey: Key.currentLevel), 1),
             levelCurrentXP:         defaults.integer(forKey: Key.levelCurrentXP),
             unlockedAchievementIDs: defaults.array(forKey: Key.achievementIDs) as? [Int] ?? [],
-            dailyCompletedLessons:  defaults.integer(forKey: Key.dailyLessons),
+            dailyCompletedQuestions: defaults.integer(forKey: Key.dailyQuestions),
             lastActiveDateString:   defaults.string(forKey: Key.lastActiveDate) ?? "",
             hearts:                 defaults.integer(forKey: Key.hearts)
         )
@@ -64,8 +67,8 @@ struct UserProgressStore {
         defaults.set(progress.completedLessons,        forKey: Key.completedLessons)
         defaults.set(progress.currentLevel,            forKey: Key.currentLevel)
         defaults.set(progress.levelCurrentXP,          forKey: Key.levelCurrentXP)
-        defaults.set(progress.unlockedAchievementIDs,  forKey: Key.achievementIDs)
-        defaults.set(progress.dailyCompletedLessons,   forKey: Key.dailyLessons)
+        defaults.set(progress.unlockedAchievementIDs,   forKey: Key.achievementIDs)
+        defaults.set(progress.dailyCompletedQuestions, forKey: Key.dailyQuestions)
         defaults.set(progress.lastActiveDateString,    forKey: Key.lastActiveDate)
         defaults.set(progress.hearts,                  forKey: Key.hearts)
     }
@@ -78,7 +81,7 @@ struct UserProgressStore {
     #if DEBUG
     func reset() {
         [Key.hasData, Key.totalXP, Key.gems, Key.currentStreak, Key.completedLessons,
-         Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyLessons,
+         Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyQuestions,
          Key.lastActiveDate, Key.hearts].forEach { defaults.removeObject(forKey: $0) }
     }
     #endif
