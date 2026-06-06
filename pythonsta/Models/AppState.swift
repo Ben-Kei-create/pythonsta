@@ -107,7 +107,6 @@ final class AppState: ObservableObject {
 
     // Bridges persisted UserProgress into the UserProfile shape that ProfileView expects.
     // displayName / username remain hardcoded until an auth system is added.
-    // totalLessons (24) is mock until a lesson catalog is implemented.
     // achievements ([]) is mock until achievement unlock tracking is wired to unlockAchievement.
     // totalLearningMinutes (0) is mock until in-lesson time tracking is added.
     var userProfile: UserProfile {
@@ -122,7 +121,7 @@ final class AppState: ObservableObject {
             gems: progress.gems,
             totalLearningMinutes: 0,
             completedLessons: progress.completedLessons,
-            totalLessons: 24,
+            totalLessons: LessonDataSource.totalLessonCount,
             achievements: []
         )
     }

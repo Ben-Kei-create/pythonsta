@@ -314,6 +314,10 @@ private struct CodeBlock: View {
 }
 
 // MARK: - Answer Area
+//
+// All three QuestionTypes (multipleChoice, codeOutput, fillInBlank) are currently
+// rendered as a tappable choice list. fillInBlank questions supply a choices array
+// as interim options; a dedicated text-field input view is planned for a future sprint.
 
 private struct AnswerArea: View {
     let choices: [String]

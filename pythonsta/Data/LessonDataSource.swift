@@ -4,218 +4,121 @@
 //
 //  Created by 茂木史明 on 2026/06/05.
 //
+//  ═══════════════════════════════════════════════════════════════════════
+//  CURRICULUM SCALE TARGET
+//  ═══════════════════════════════════════════════════════════════════════
+//  Target lessons:   130
+//  Target questions: 1300  (≈ 10 questions per lesson)
+//  Daily learning:   ≈ 5 questions/day  →  ≈ 260 active days to complete
+//  Outcome:          Learners can read and write practical Python code
+//                    used in real-world projects.
+//
+//  CURRENT STATE: SEED DATA ONLY
+//  Lessons:   5  (of 130 target)
+//  Questions: 25 (of 1300 target)
+//
+//  ═══════════════════════════════════════════════════════════════════════
+//  CURRICULUM ROADMAP  (17 major topics × ~8 lessons × 10 questions)
+//  ═══════════════════════════════════════════════════════════════════════
+//
+//  #  Topic (日本語)              Course ID   Lesson IDs   Order range
+//  ── ───────────────────────     ─────────   ──────────   ───────────
+//  01 Python基礎                  0           0–9          0–9       ← SEED (5/10 lessons)
+//  02 変数と型                    1           10–19        10–19
+//  03 演算子                      2           20–29        20–29
+//  04 条件分岐                    3           30–39        30–39
+//  05 繰り返し                    4           40–49        40–49
+//  06 関数                        5           50–59        50–59
+//  07 リストとタプル               6           60–69        60–69
+//  08 辞書とセット                 7           70–79        70–79
+//  09 文字列処理                   8           80–89        80–89
+//  10 例外処理                    9           90–99        90–99
+//  11 ファイル操作                 10          100–109      100–109
+//  12 JSON                        11          110–119      110–119
+//  13 モジュール                  12          120–129      120–129
+//  14 オブジェクト指向             13          130–139      130–139
+//  15 API活用                     14          140–149      140–149
+//  16 実践演習                    15          150–159      150–159
+//  17 ミニプロジェクト             16          160–169      160–169
+//
+//  ═══════════════════════════════════════════════════════════════════════
+//  ID ALLOCATION RULES  (enforce before adding new content)
+//  ═══════════════════════════════════════════════════════════════════════
+//  - Course IDs:    sequential from 0 (one per major topic above)
+//  - Lesson IDs:    courseID * 10  …  courseID * 10 + 9
+//  - Lesson orders: same as lesson IDs (globally unique; drives unlock)
+//  - Question IDs:  lessonID * 10  …  lessonID * 10 + 9
+//
+//  Example — adding lesson 5 to Python基礎 (course 0):
+//    Lesson  id: 5,  order: 5,  questions: [q50 … q59]
+//    Question ids: 50, 51, 52, 53, 54, 55, 56, 57, 58, 59
+//
+//  ═══════════════════════════════════════════════════════════════════════
+//  HOW TO ADD A NEW LESSON
+//  ═══════════════════════════════════════════════════════════════════════
+//  1. Open the appropriate course file in Data/Courses/.
+//     If the course file does not exist, create it following the pattern
+//     of PythonBasics.swift and add the new Course to `courses` below.
+//  2. Define question constants (private let qNN = Question(...)).
+//  3. Define the lesson constant (private let lessonN = Lesson(...)).
+//  4. Append lessonN to the course's `lessons` array.
+//  5. No other changes needed — unlock logic and navigation are automatic.
+//
+//  ═══════════════════════════════════════════════════════════════════════
+//  UNLOCK LOGIC
+//  ═══════════════════════════════════════════════════════════════════════
+//  AppState.progress.completedLessons is a global counter incremented once
+//  per completed lesson. HomeView maps it to node states using lesson.order:
+//    order < completedLessons  → .completed
+//    order == completedLessons → .current   (next to unlock)
+//    order > completedLessons  → .locked
+//
+//  Because lesson.order values are globally unique across all courses,
+//  this logic works correctly even when multiple courses are added.
+//  Lesson.requiredXP is stored for a future XP-gated unlock mode.
+//
 
 import Foundation
 
 enum LessonDataSource {
-    static let courses: [Course] = [pythonIntro]
+
+    // MARK: - Course Registry
+    // Register each course file here after creating it.
+
+    static let courses: [Course] = [
+        PythonBasicsCourse.course,
+        // Add future courses here:
+        // VariablesTypesCourse.course,    // course ID 1, orders 10–19
+        // OperatorsCourse.course,         // course ID 2, orders 20–29
+        // ConditionalsCourse.course,      // course ID 3, orders 30–39
+        // LoopsCourse.course,             // course ID 4, orders 40–49
+        // FunctionsCourse.course,         // course ID 5, orders 50–59
+        // ListsTuplesCourse.course,       // course ID 6, orders 60–69
+        // DictSetsCourse.course,          // course ID 7, orders 70–79
+        // StringsCourse.course,           // course ID 8, orders 80–89
+        // ExceptionsCourse.course,        // course ID 9, orders 90–99
+        // FileIOCourse.course,            // course ID 10, orders 100–109
+        // JSONCourse.course,              // course ID 11, orders 110–119
+        // ModulesCourse.course,           // course ID 12, orders 120–129
+        // OOPCourse.course,               // course ID 13, orders 130–139
+        // APICourse.course,               // course ID 14, orders 140–149
+        // PracticalCourse.course,         // course ID 15, orders 150–159
+        // MiniProjectsCourse.course,      // course ID 16, orders 160–169
+    ]
+
+    // MARK: - Convenience
 
     static var allLessons: [Lesson] { courses.flatMap { $0.lessons } }
 
+    static var totalLessonCount: Int { allLessons.count }
+
     static var defaultLesson: Lesson { courses[0].lessons[0] }
+
+    static func lesson(id: Int) -> Lesson? {
+        allLessons.first { $0.id == id }
+    }
+
+    static func course(id: Int) -> Course? {
+        courses.first { $0.id == id }
+    }
 }
-
-// MARK: - Python入門
-
-private let pythonIntro = Course(
-    id: 0,
-    title: "Python入門",
-    subtitle: "Pythonの基礎を学ぼう",
-    lessons: [lesson0, lesson1, lesson2, lesson3]
-)
-
-// MARK: Lesson 0 — print()を使おう
-
-private let lesson0 = Lesson(
-    id: 0,
-    title: "print()を使おう",
-    shortLabel: "print()",
-    subtitle: "出力",
-    category: "Python基礎",
-    order: 0,
-    questions: [q0, q1, q2],
-    requiredXP: 0
-)
-
-private let q0 = Question(
-    id: 0,
-    type: .multipleChoice,
-    prompt: "print()は\n何をする命令でしょう？",
-    codeSnippet: nil,
-    choices: ["文字を表示する", "計算する", "保存する", "終了する"],
-    correctAnswer: "文字を表示する",
-    explanation: "print()は()の中の値を画面に表示するよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q1 = Question(
-    id: 1,
-    type: .codeOutput,
-    prompt: "このコードを実行すると\n何が表示される？",
-    codeSnippet: "print(\"Hello, Python!\")",
-    choices: ["Hello, Python!", "hello, python!", "print", "エラー"],
-    correctAnswer: "Hello, Python!",
-    explanation: "print()は\"\"の中の文字をそのまま表示するよ！大文字・小文字も正確に出力されるよ。",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q2 = Question(
-    id: 2,
-    type: .multipleChoice,
-    prompt: "print(42)を実行すると\nどうなる？",
-    codeSnippet: nil,
-    choices: ["42が表示される", "エラーになる", "\"42\"と表示される", "何も起きない"],
-    correctAnswer: "42が表示される",
-    explanation: "print()は数値もそのまま表示できるよ！数値に「\"\"」は不要だよ。",
-    xpReward: 10,
-    gemReward: 1
-)
-
-// MARK: Lesson 1 — 変数を使おう
-
-private let lesson1 = Lesson(
-    id: 1,
-    title: "変数を使おう",
-    shortLabel: "変数",
-    subtitle: "データ保存",
-    category: "Python基礎",
-    order: 1,
-    questions: [q3, q4, q5],
-    requiredXP: 30
-)
-
-private let q3 = Question(
-    id: 3,
-    type: .multipleChoice,
-    prompt: "変数に値を入れる操作を\n何という？",
-    codeSnippet: nil,
-    choices: ["代入", "表示", "削除", "計算"],
-    correctAnswer: "代入",
-    explanation: "変数に値を入れることを「代入」というよ。「=」を使って代入するよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q4 = Question(
-    id: 4,
-    type: .codeOutput,
-    prompt: "このコードを実行すると\n何が表示される？",
-    codeSnippet: "name = \"Python\"\nprint(name)",
-    choices: ["Python", "name", "\"Python\"", "エラー"],
-    correctAnswer: "Python",
-    explanation: "変数nameに\"Python\"を代入してprint()で表示したよ。\"\"は表示されないよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q5 = Question(
-    id: 5,
-    type: .multipleChoice,
-    prompt: "正しい変数名は\nどれでしょう？",
-    codeSnippet: nil,
-    choices: ["my_name", "2name", "my-name", "my name"],
-    correctAnswer: "my_name",
-    explanation: "変数名は英字か_から始める必要があるよ。数字始まりや「-」「スペース」はNG！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-// MARK: Lesson 2 — if文を使おう
-
-private let lesson2 = Lesson(
-    id: 2,
-    title: "if文を使おう",
-    shortLabel: "if文",
-    subtitle: "判断",
-    category: "条件分岐",
-    order: 2,
-    questions: [q6, q7, q8],
-    requiredXP: 60
-)
-
-private let q6 = Question(
-    id: 6,
-    type: .multipleChoice,
-    prompt: "if文は何のために\n使う？",
-    codeSnippet: nil,
-    choices: ["条件によって処理を変える", "繰り返しを行う", "関数を作る", "変数を保存する"],
-    correctAnswer: "条件によって処理を変える",
-    explanation: "if文は条件が真(True)か偽(False)かで実行する処理を変えることができるよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q7 = Question(
-    id: 7,
-    type: .codeOutput,
-    prompt: "このコードを実行すると\n何が表示される？",
-    codeSnippet: "x = 10\nif x > 5:\n    print(\"大きい\")",
-    choices: ["大きい", "小さい", "10", "何も表示されない"],
-    correctAnswer: "大きい",
-    explanation: "x = 10 は 5 より大きいのでif条件が真となり「大きい」が表示されるよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q8 = Question(
-    id: 8,
-    type: .multipleChoice,
-    prompt: "elseはいつ実行される？",
-    codeSnippet: nil,
-    choices: ["ifの条件が偽のとき", "ifの条件が真のとき", "常に実行される", "エラーのとき"],
-    correctAnswer: "ifの条件が偽のとき",
-    explanation: "elseはifの条件が偽(False)のときに実行されるよ。条件を満たさない場合の処理を書くよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-// MARK: Lesson 3 — for文を使おう
-
-private let lesson3 = Lesson(
-    id: 3,
-    title: "for文を使おう",
-    shortLabel: "for文",
-    subtitle: "ループ",
-    category: "繰り返し",
-    order: 3,
-    questions: [q9, q10, q11],
-    requiredXP: 90
-)
-
-private let q9 = Question(
-    id: 9,
-    type: .multipleChoice,
-    prompt: "for文は何のために\n使う？",
-    codeSnippet: nil,
-    choices: ["繰り返し処理をする", "条件分岐する", "変数を作る", "関数を呼ぶ"],
-    correctAnswer: "繰り返し処理をする",
-    explanation: "for文はリストや範囲の各要素に対して同じ処理を繰り返すときに使うよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q10 = Question(
-    id: 10,
-    type: .codeOutput,
-    prompt: "このコードで最後に\n表示される数字は？",
-    codeSnippet: "for i in range(3):\n    print(i)",
-    choices: ["2", "3", "0", "1"],
-    correctAnswer: "2",
-    explanation: "range(3)は0,1,2を生成するよ。最後の値は3-1=2だよ！",
-    xpReward: 10,
-    gemReward: 1
-)
-
-private let q11 = Question(
-    id: 11,
-    type: .multipleChoice,
-    prompt: "range(5)が生成する\n数列はどれ？",
-    codeSnippet: nil,
-    choices: ["0, 1, 2, 3, 4", "1, 2, 3, 4, 5", "0, 1, 2, 3, 4, 5", "1, 2, 3, 4"],
-    correctAnswer: "0, 1, 2, 3, 4",
-    explanation: "range(n)は0からn-1までの整数を生成するよ。range(5)なら0〜4の5つだよ！",
-    xpReward: 10,
-    gemReward: 1
-)
