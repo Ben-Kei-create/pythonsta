@@ -137,6 +137,16 @@ final class AppState: ObservableObject {
         save()
     }
 
+    // Queues a missed question for later review. De-duplicates by ID so a
+    // question already queued isn't appended again on a repeat miss.
+    // Called by LessonView immediately when an answer is marked incorrect —
+    // never for correct answers.
+    func addQuestionToReview(_ questionID: Int) {
+        guard !progress.reviewQuestionIDs.contains(questionID) else { return }
+        progress.reviewQuestionIDs.append(questionID)
+        save()
+    }
+
     func unlockAchievement(id: Int) {
         guard !progress.unlockedAchievementIDs.contains(id) else { return }
         progress.unlockedAchievementIDs.append(id)

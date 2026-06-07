@@ -33,6 +33,12 @@ struct UserProgress {
     // re-arm on a new calendar day with no separate reset bookkeeping needed.
     var dailyGoalCelebrationDateString: String = ""
 
+    // IDs of questions answered incorrectly, queued for future review.
+    // Appended (de-duplicated) by AppState.addQuestionToReview(); a question
+    // already in the queue is not re-added on a repeat miss. Review Mode
+    // itself is not implemented yet — this only persists the queue.
+    var reviewQuestionIDs: [Int] = []
+
     // XP threshold to advance from `level` to `level + 1`.
     static func levelMaxXP(for level: Int) -> Int { max(level, 1) * 100 }
 

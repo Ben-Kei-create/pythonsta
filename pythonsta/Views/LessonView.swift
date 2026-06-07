@@ -183,6 +183,7 @@ struct LessonView: View {
             fillSubmitted = true
             if !isCorrect {
                 appState.loseHeart()
+                appState.addQuestionToReview(question.id)
                 if appState.progress.hearts == 0 {
                     showNoHeartsSheet = true
                     return
@@ -197,6 +198,7 @@ struct LessonView: View {
             isCorrect = (selectedText == question.correctAnswer)
             if !isCorrect {
                 appState.loseHeart()
+                appState.addQuestionToReview(question.id)
                 if appState.progress.hearts == 0 {
                     withAnimation { answerState = .submitted(selectedIndex) }
                     showNoHeartsSheet = true
