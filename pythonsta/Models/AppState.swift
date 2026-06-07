@@ -10,7 +10,7 @@ import Combine
 
 
 enum Screen {
-    case splash, welcome, onboarding, home, lesson, result, profile, ranking, collection, shop, settings, review
+    case splash, welcome, onboarding, home, lesson, result, profile, ranking, collection, shop, settings, review, bookmarks
 }
 
 final class AppState: ObservableObject {
@@ -178,6 +178,14 @@ final class AppState: ObservableObject {
 
     func isQuestionBookmarked(_ questionID: Int) -> Bool {
         progress.bookmarkedQuestionIDs.contains(questionID)
+    }
+
+    // Routes to Bookmark Mode. BookmarkView snapshots the current bookmark
+    // list itself (via ContentView's construction) so unbookmarking
+    // mid-session doesn't reshuffle the in-progress question list — mirrors
+    // startReview()/ReviewView's snapshotting pattern.
+    func startBookmarkPractice() {
+        navigate(to: .bookmarks)
     }
 
     func unlockAchievement(id: Int) {

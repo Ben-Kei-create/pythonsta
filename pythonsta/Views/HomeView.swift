@@ -73,7 +73,8 @@ struct HomeView: View {
                     .padding(.horizontal, 20)
 
                     BookmarkedQuestionsCard(
-                        bookmarkCount: appState.progress.bookmarkedQuestionIDs.count
+                        bookmarkCount: appState.progress.bookmarkedQuestionIDs.count,
+                        onViewBookmarks: { appState.startBookmarkPractice() }
                     )
                     .padding(.horizontal, 20)
 
@@ -259,12 +260,11 @@ private struct ReviewQueueCard: View {
 
 // MARK: - Bookmarked Questions
 
-// Surfaces the count of manually bookmarked questions. Bookmark Mode itself
-// (a dedicated practice flow over bookmarkedQuestionIDs) is not implemented
-// yet, so "見る" is shown as a disabled "近日対応" placeholder — mirrors the
-// pattern ReviewQueueCard used before Review Mode existed.
+// Surfaces the count of manually bookmarked questions and, once Bookmark
+// Mode has content to show, a "見る" button that opens BookmarkView.
 private struct BookmarkedQuestionsCard: View {
     let bookmarkCount: Int
+    let onViewBookmarks: () -> Void
 
     var body: some View {
         FloatingCard {
@@ -273,28 +273,28 @@ private struct BookmarkedQuestionsCard: View {
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(.textGray)
 
-                HStack(alignment: .center, spacing: 16) {
-                    if bookmarkCount > 0 {
+                if bookmarkCount > 0 {
+                    HStack(alignment: .center, spacing: 16) {
                         Text("\(bookmarkCount)問")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.primaryPurple)
-                    } else {
-                        Text("保存した問題はありません")
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
-                            .foregroundColor(.textGray)
+
+                        Spacer()
+
+                        Button(action: onViewBookmarks) {
+                            Text("見る")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(Color.primaryPurple)
+                                .clipShape(Capsule())
+                        }
                     }
-
-                    Spacer()
-
-                    // Bookmark Mode isn't implemented yet — "見る" is shown
-                    // disabled with a "近日対応" cue rather than navigating anywhere.
-                    Text("見る（近日対応）")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                } else {
+                    Text("保存した問題はありません")
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundColor(.textGray)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.textGray.opacity(0.12))
-                        .clipShape(Capsule())
                 }
             }
             .padding(20)

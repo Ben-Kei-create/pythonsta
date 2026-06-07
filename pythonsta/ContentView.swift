@@ -52,6 +52,11 @@ struct ContentView: View {
                 // removals (on correct answers) don't reshuffle the list.
                 ReviewView(questions: LessonDataSource.questions(for: appState.progress.reviewQuestionIDs))
                     .transition(.opacity)
+            case .bookmarks:
+                // Snapshot the bookmark list at construction time so mid-session
+                // unbookmarking doesn't reshuffle the in-progress list.
+                BookmarkView(questions: LessonDataSource.questions(for: appState.progress.bookmarkedQuestionIDs))
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)
