@@ -680,8 +680,6 @@ private struct ResultBottomSheet: View {
                     if isCorrect {
                         CorrectContent(
                             explanation: question.explanation,
-                            xpReward: question.xpReward,
-                            gemReward: question.gemReward,
                             onNext: onNext
                         )
                     } else {
@@ -705,9 +703,11 @@ private struct ResultBottomSheet: View {
 
 private struct CorrectContent: View {
     let explanation: String
-    let xpReward: Int
-    let gemReward: Int
     let onNext: () -> Void
+
+    // Explanation stays hidden until the user opts in via "解説を見る" —
+    // tapping "つぎへ" works either way, so reading it is optional, not gating.
+    @State private var showExplanation = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -717,16 +717,21 @@ private struct CorrectContent: View {
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
-                    HStack(spacing: 10) {
-                        RewardPill(icon: "🔥", text: "+\(xpReward) XP")
-                        RewardPill(icon: "💎", text: "+\(gemReward) Gem")
-                    }
-
-                    Text(explanation)
-                        .font(.system(size: 14, weight: .regular, design: .rounded))
-                        .foregroundColor(.white.opacity(0.9))
-                        .fixedSize(horizontal: false, vertical: true)
+                    if showExplanation {
+                        Text(explanation)
+                            .font(.system(size: 14, weight: .regular, design: .rounded))
+                            .foregroundColor(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 4)
+                    } else {
+                        Button(action: { withAnimation { showExplanation = true } }) {
+                            Text("解説を見る")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+                                .underline()
+                        }
                         .padding(.top, 4)
+                    }
                 }
 
                 Spacer()
@@ -760,6 +765,10 @@ private struct WrongContent: View {
     let correctAnswer: String
     let onNext: () -> Void
 
+    // Explanation stays hidden until the user opts in via "解説を見る" —
+    // tapping "やり直す" works either way, so reading it is optional, not gating.
+    @State private var showExplanation = false
+
     var body: some View {
         VStack(spacing: 16) {
             HStack(alignment: .top, spacing: 16) {
@@ -768,11 +777,25 @@ private struct WrongContent: View {
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
-                    Text("正解は「\(correctAnswer)」だよ。\n\(explanation)")
+                    Text("正解は「\(correctAnswer)」だよ。")
                         .font(.system(size: 14, weight: .regular, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 4)
+
+                    if showExplanation {
+                        Text(explanation)
+                            .font(.system(size: 14, weight: .regular, design: .rounded))
+                            .foregroundColor(.white.opacity(0.9))
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Button(action: { withAnimation { showExplanation = true } }) {
+                            Text("解説を見る")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+                                .underline()
+                        }
+                    }
                 }
 
                 Spacer()
@@ -798,24 +821,6 @@ private struct WrongContent: View {
                     .clipShape(Capsule())
             }
         }
-    }
-}
-
-private struct RewardPill: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(icon).font(.system(size: 13))
-            Text(text)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(Color.white.opacity(0.2))
-        .clipShape(Capsule())
     }
 }
 
