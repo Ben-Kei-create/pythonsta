@@ -66,8 +66,11 @@ struct HomeView: View {
                     DailyProgressCard(progress: appState.progress)
                         .padding(.horizontal, 20)
 
-                    ReviewQueueCard(reviewCount: appState.progress.reviewQuestionIDs.count)
-                        .padding(.horizontal, 20)
+                    ReviewQueueCard(
+                        reviewCount: appState.progress.reviewQuestionIDs.count,
+                        onStartReview: { appState.startReview() }
+                    )
+                    .padding(.horizontal, 20)
 
                     // v1: displays the first course as a single linear learning path.
                     // courses[0] is safe — LessonDataSource.courses is a non-empty static constant.
@@ -202,10 +205,11 @@ private struct StatItem: View {
 // MARK: - Review Queue
 
 // Surfaces questions answered incorrectly and queued via
-// AppState.addQuestionToReview(). Review Mode itself isn't built yet —
-// this card only shows the queue size; the action is marked 近日対応.
+// AppState.addQuestionToReview(). Tapping "復習する" starts Review Mode
+// (AppState.startReview() → ReviewView) when the queue has items.
 private struct ReviewQueueCard: View {
     let reviewCount: Int
+    let onStartReview: () -> Void
 
     var body: some View {
         FloatingCard {
@@ -227,21 +231,14 @@ private struct ReviewQueueCard: View {
 
                         Spacer()
 
-                        VStack(spacing: 6) {
-                            Button(action: {}) {
-                                Text("復習する")
-                                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 12)
-                                    .background(Color.primaryPurple.opacity(0.35))
-                                    .clipShape(Capsule())
-                            }
-                            .disabled(true)
-
-                            Text("近日対応")
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
-                                .foregroundColor(.textGray)
+                        Button(action: onStartReview) {
+                            Text("復習する")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .background(Color.primaryPurple)
+                                .clipShape(Capsule())
                         }
                     }
                 } else {

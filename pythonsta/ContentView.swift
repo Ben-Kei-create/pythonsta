@@ -47,6 +47,11 @@ struct ContentView: View {
             case .settings:
                 SettingsView()
                     .transition(.opacity)
+            case .review:
+                // Snapshot the queue at construction time so mid-session
+                // removals (on correct answers) don't reshuffle the list.
+                ReviewView(questions: LessonDataSource.questions(for: appState.progress.reviewQuestionIDs))
+                    .transition(.opacity)
             }
         }
         .environmentObject(appState)

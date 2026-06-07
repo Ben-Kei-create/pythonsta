@@ -138,4 +138,25 @@ enum LessonDataSource {
     static func course(id: Int) -> Course? {
         courses.first { $0.id == id }
     }
+
+    // MARK: - Review Mode lookups
+
+    // Finds a single question by ID across all courses/lessons.
+    // Used to resolve AppState.progress.reviewQuestionIDs into real Question
+    // values for ReviewView.
+    static func question(for id: Int) -> Question? {
+        for lesson in allLessons {
+            if let match = lesson.questions.first(where: { $0.id == id }) {
+                return match
+            }
+        }
+        return nil
+    }
+
+    // Resolves a list of IDs into questions, preserving order and silently
+    // dropping any ID that no longer matches a question (e.g. seed data
+    // changed). compactMap keeps this safe with no crashes.
+    static func questions(for ids: [Int]) -> [Question] {
+        ids.compactMap(question(for:))
+    }
 }

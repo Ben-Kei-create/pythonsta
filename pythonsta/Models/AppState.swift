@@ -10,7 +10,7 @@ import Combine
 
 
 enum Screen {
-    case splash, welcome, onboarding, home, lesson, result, profile, ranking, collection, shop, settings
+    case splash, welcome, onboarding, home, lesson, result, profile, ranking, collection, shop, settings, review
 }
 
 final class AppState: ObservableObject {
@@ -144,6 +144,22 @@ final class AppState: ObservableObject {
     func addQuestionToReview(_ questionID: Int) {
         guard !progress.reviewQuestionIDs.contains(questionID) else { return }
         progress.reviewQuestionIDs.append(questionID)
+        save()
+    }
+
+    // Routes to Review Mode. ReviewView snapshots the current queue itself
+    // (via ContentView's construction) so removals mid-session don't reshuffle
+    // the in-progress question list.
+    func startReview() {
+        navigate(to: .review)
+    }
+
+    // Removes a question from the review queue once answered correctly in
+    // Review Mode — persisted immediately so the queue stays accurate even
+    // if the app closes mid-session. Wrong answers leave the queue untouched.
+    func removeQuestionFromReview(_ questionID: Int) {
+        guard let index = progress.reviewQuestionIDs.firstIndex(of: questionID) else { return }
+        progress.reviewQuestionIDs.remove(at: index)
         save()
     }
 

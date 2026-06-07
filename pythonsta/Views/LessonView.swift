@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - Answer state
 
-private enum AnswerState {
+enum AnswerState {
     case idle, selected(Int), submitted(Int)
 
     var selectedIndex: Int? {
@@ -274,7 +274,7 @@ struct LessonView: View {
 
 // MARK: - Top Bar
 
-private struct LessonTopBar: View {
+struct LessonTopBar: View {
     let hearts: Int
     let currentQuestion: Int
     let totalQuestions: Int
@@ -332,7 +332,7 @@ private struct HeartRow: View {
 
 // MARK: - Lesson Card
 
-private struct LessonCard: View {
+struct LessonCard: View {
     let question: Question
     let category: String
 
@@ -420,7 +420,7 @@ private struct CodeBlock: View {
 
 // MARK: - Fill-in-Blank Area
 
-private struct FillInBlankArea: View {
+struct FillInBlankArea: View {
     @Binding var answer: String
     let submitted: Bool
     let isCorrect: Bool
@@ -487,7 +487,7 @@ private struct FillInBlankArea: View {
 // Renders multipleChoice and codeOutput questions as a tappable choice list.
 // fillInBlank questions are handled by FillInBlankArea (text-field input).
 
-private struct AnswerArea: View {
+struct AnswerArea: View {
     let choices: [String]
     let correctAnswer: String
     let answerState: AnswerState
@@ -638,7 +638,7 @@ private struct AnswerCard: View {
 
 // MARK: - Confirm Button
 
-private struct ConfirmButton: View {
+struct ConfirmButton: View {
     let isEnabled: Bool
     let onTap: () -> Void
 
@@ -663,7 +663,7 @@ private struct ConfirmButton: View {
 
 // MARK: - Result Bottom Sheet
 
-private struct ResultBottomSheet: View {
+struct ResultBottomSheet: View {
     let isCorrect: Bool
     let question: Question
     let onNext: () -> Void
@@ -917,8 +917,9 @@ private struct NoHeartsSheet: View {
 
 // Shown when appState.currentLesson.questions is empty (e.g. a stub lesson added
 // before its content is written). Prevents an out-of-bounds crash on `questions[0]`.
-private struct LessonUnavailableFallback: View {
+struct LessonUnavailableFallback: View {
     let onBack: () -> Void
+    var message: String = "このレッスンはまだ準備中です"
 
     var body: some View {
         ZStack {
@@ -927,7 +928,7 @@ private struct LessonUnavailableFallback: View {
                 Image(systemName: "exclamationmark.circle")
                     .font(.system(size: 48, weight: .light))
                     .foregroundColor(.textGray.opacity(0.5))
-                Text("このレッスンはまだ準備中です")
+                Text(message)
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.textDark)
                 Button(action: onBack) {
