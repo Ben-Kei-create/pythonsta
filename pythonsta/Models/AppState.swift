@@ -112,8 +112,10 @@ final class AppState: ObservableObject {
             } ?? result
         let finalResult = enrichedResult.with(dailyGoalCelebration: celebration)
 
-        // Ad display trigger — frequency cap enforced inside AdManager.
-        AdManager.shared.showInterstitialIfReady()
+        // Ad display trigger — fires only here (post-lesson, pre-ResultView),
+        // never mid-lesson. Readiness, frequency cap, and premium gating are
+        // all the AdManager's responsibility; this call site stays a one-liner.
+        AdManager.shared.showInterstitialIfReady(reason: .lessonCompletion)
 
         currentResult = finalResult
         withAnimation(.easeInOut(duration: 0.3)) {
