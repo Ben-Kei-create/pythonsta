@@ -20,6 +20,7 @@ struct LessonResult {
     let successTitle: String
     let encouragementMessage: String
     let unlockedAchievement: UnlockedAchievement?
+    let dailyGoalCelebration: DailyGoalCelebration?
 
     var levelProgressFraction: Double {
         guard levelMaxXP > 0 else { return 0 }
@@ -40,6 +41,14 @@ struct LessonResult {
         let description: String
     }
 
+    // Carries the optional one-time-per-day bonus awarded when the daily
+    // question goal is first reached. bonusXP/bonusGems are 0 when the
+    // celebration is UI-only (no reward configured).
+    struct DailyGoalCelebration {
+        let bonusXP: Int
+        let bonusGems: Int
+    }
+
     // Returns a copy of this result with `unlockedAchievement` replaced.
     // Used by AppState.completeLesson() to attach newly unlocked achievements.
     func with(unlockedAchievement: UnlockedAchievement?) -> LessonResult {
@@ -55,7 +64,28 @@ struct LessonResult {
             levelMaxXP: levelMaxXP,
             successTitle: successTitle,
             encouragementMessage: encouragementMessage,
-            unlockedAchievement: unlockedAchievement
+            unlockedAchievement: unlockedAchievement,
+            dailyGoalCelebration: dailyGoalCelebration
+        )
+    }
+
+    // Returns a copy of this result with `dailyGoalCelebration` replaced.
+    // Used by AppState.completeLesson() to attach the first-time daily-goal celebration.
+    func with(dailyGoalCelebration: DailyGoalCelebration?) -> LessonResult {
+        LessonResult(
+            xpEarned: xpEarned,
+            gemsEarned: gemsEarned,
+            streakDelta: streakDelta,
+            accuracyPercent: accuracyPercent,
+            elapsedTime: elapsedTime,
+            comboCount: comboCount,
+            currentLevel: currentLevel,
+            currentXP: currentXP,
+            levelMaxXP: levelMaxXP,
+            successTitle: successTitle,
+            encouragementMessage: encouragementMessage,
+            unlockedAchievement: unlockedAchievement,
+            dailyGoalCelebration: dailyGoalCelebration
         )
     }
 
@@ -74,6 +104,7 @@ struct LessonResult {
         unlockedAchievement: UnlockedAchievement(
             title: "初めてのprint()",
             description: "初めてのレッスンを完了しました"
-        )
+        ),
+        dailyGoalCelebration: DailyGoalCelebration(bonusXP: 20, bonusGems: 5)
     )
 }

@@ -259,7 +259,8 @@ struct LessonView: View {
             levelMaxXP: appState.progress.currentLevelMaxXP,
             successTitle: title,
             encouragementMessage: message,
-            unlockedAchievement: nil
+            unlockedAchievement: nil,
+            dailyGoalCelebration: nil
         )
     }
 

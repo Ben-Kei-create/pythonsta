@@ -74,6 +74,25 @@ final class AppState: ObservableObject {
         // Credit the exact number of questions answered in this lesson toward the daily goal.
         recordActivity(questionCount: currentLesson.questions.count)
 
+        // Daily goal celebration — fires once per calendar day, the first time
+        // dailyCompletedQuestions reaches dailyGoal. Comparing the stored date
+        // string to "today" re-arms the gate on a new day with no extra reset logic.
+        // The goal is a soft target: hitting it neither caps nor blocks further activity.
+        var celebration: LessonResult.DailyGoalCelebration? = nil
+        let today = isoDate(Date())
+        if progress.dailyGoal > 0,
+           progress.dailyCompletedQuestions >= progress.dailyGoal,
+           progress.dailyGoalCelebrationDateString != today {
+            progress.dailyGoalCelebrationDateString = today
+            let bonusXP = 20
+            let bonusGems = 5
+            progress.totalXP += bonusXP
+            progress.levelCurrentXP += bonusXP
+            applyLevelUps()
+            progress.gems = max(0, progress.gems + bonusGems)
+            celebration = .init(bonusXP: bonusXP, bonusGems: bonusGems)
+        }
+
         // Check and batch-unlock achievements with fully updated progress.
         // Appended directly here so the single save() below persists everything atomically.
         let newIDs = AchievementCatalog.newlyUnlocked(progress: progress, result: result)
@@ -83,18 +102,20 @@ final class AppState: ObservableObject {
 
         save()
 
-        // Attach the first newly-unlocked achievement to the result for ResultView display.
+        // Attach the first newly-unlocked achievement and any daily-goal celebration
+        // to the result for ResultView display.
         let enrichedResult = newIDs
             .compactMap { AchievementCatalog.definition(for: $0) }
             .first
             .map { def in
                 result.with(unlockedAchievement: .init(title: def.title, description: def.description))
             } ?? result
+        let finalResult = enrichedResult.with(dailyGoalCelebration: celebration)
 
         // Ad display trigger — frequency cap enforced inside AdManager.
         AdManager.shared.showInterstitialIfReady()
 
-        currentResult = enrichedResult
+        currentResult = finalResult
         withAnimation(.easeInOut(duration: 0.3)) {
             currentScreen = .result
         }

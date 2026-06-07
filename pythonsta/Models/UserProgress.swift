@@ -28,6 +28,10 @@ struct UserProgress {
     var hasCompletedOnboarding: Bool = false
     // Selected learning purpose from onboarding Step A. Empty string until onboarding completes.
     var learningPurpose: String = ""
+    // "yyyy-MM-dd" of the last day the daily-goal celebration was awarded.
+    // Empty until first time reached. Comparing against "today" lets the gate
+    // re-arm on a new calendar day with no separate reset bookkeeping needed.
+    var dailyGoalCelebrationDateString: String = ""
 
     // XP threshold to advance from `level` to `level + 1`.
     static func levelMaxXP(for level: Int) -> Int { max(level, 1) * 100 }

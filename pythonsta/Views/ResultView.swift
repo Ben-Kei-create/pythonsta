@@ -44,6 +44,14 @@ struct ResultView: View {
                             .appear(appeared, delay: 0.62)
                     }
 
+                    if let celebration = result.dailyGoalCelebration {
+                        DailyGoalCelebrationCardView(
+                            celebration: celebration,
+                            dailyGoal: appState.progress.dailyGoal
+                        )
+                        .appear(appeared, delay: 0.66)
+                    }
+
                     PyroEncouragementView(message: result.encouragementMessage)
                         .appear(appeared, delay: 0.72)
 
@@ -310,6 +318,73 @@ struct AchievementUnlockCardView: View {
             }
             .padding(16)
         }
+    }
+}
+
+// MARK: - DailyGoalCelebrationCardView
+
+// Shown once per calendar day, the first time the user reaches their daily
+// question goal. The goal is a soft target — this card explicitly reassures
+// the user that continuing past it is encouraged, not redundant.
+struct DailyGoalCelebrationCardView: View {
+    let celebration: LessonResult.DailyGoalCelebration
+    let dailyGoal: Int
+
+    var body: some View {
+        FloatingCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.snakeGreen)
+                    Text("今日の目標達成！")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(.textDark)
+                }
+
+                Text("\(dailyGoal)問クリアしました")
+                    .font(.system(size: 13, weight: .regular, design: .rounded))
+                    .foregroundColor(.textGray)
+
+                Text("このまま続けてもOK！")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.textGray)
+
+                if celebration.bonusXP > 0 || celebration.bonusGems > 0 {
+                    HStack(spacing: 10) {
+                        if celebration.bonusXP > 0 {
+                            CelebrationBonusBadge(icon: "✨", text: "+\(celebration.bonusXP) ボーナスXP", tint: .primaryPurple)
+                        }
+                        if celebration.bonusGems > 0 {
+                            CelebrationBonusBadge(icon: "💎", text: "+\(celebration.bonusGems) ボーナスGem", tint: .appTeal)
+                        }
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+private struct CelebrationBonusBadge: View {
+    let icon: String
+    let text: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(icon).font(.system(size: 13))
+            Text(text)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(tint.opacity(0.12))
+        .clipShape(Capsule())
     }
 }
 
