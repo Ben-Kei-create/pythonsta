@@ -163,6 +163,23 @@ final class AppState: ObservableObject {
         save()
     }
 
+    // Manually toggles a question's bookmark state — independent of the
+    // review queue (bookmarking is a deliberate user choice, not a
+    // wrong-answer consequence). Persisted immediately; does not touch XP,
+    // gems, hearts, streak, daily goal, or reviewQuestionIDs.
+    func toggleQuestionBookmark(_ questionID: Int) {
+        if let index = progress.bookmarkedQuestionIDs.firstIndex(of: questionID) {
+            progress.bookmarkedQuestionIDs.remove(at: index)
+        } else {
+            progress.bookmarkedQuestionIDs.append(questionID)
+        }
+        save()
+    }
+
+    func isQuestionBookmarked(_ questionID: Int) -> Bool {
+        progress.bookmarkedQuestionIDs.contains(questionID)
+    }
+
     func unlockAchievement(id: Int) {
         guard !progress.unlockedAchievementIDs.contains(id) else { return }
         progress.unlockedAchievementIDs.append(id)

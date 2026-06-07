@@ -39,6 +39,12 @@ struct UserProgress {
     // itself is not implemented yet — this only persists the queue.
     var reviewQuestionIDs: [Int] = []
 
+    // IDs of questions the user has manually bookmarked to revisit later.
+    // Toggled (added/removed) by AppState.toggleQuestionBookmark(); independent
+    // of reviewQuestionIDs — bookmarking is a manual user choice, not a
+    // wrong-answer consequence, and does not affect the review queue.
+    var bookmarkedQuestionIDs: [Int] = []
+
     // XP threshold to advance from `level` to `level + 1`.
     static func levelMaxXP(for level: Int) -> Int { max(level, 1) * 100 }
 

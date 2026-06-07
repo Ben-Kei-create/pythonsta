@@ -96,7 +96,12 @@ struct ReviewView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        LessonCard(question: question, category: "復習")
+                        LessonCard(
+                            question: question,
+                            category: "復習",
+                            isBookmarked: appState.isQuestionBookmarked(question.id),
+                            onToggleBookmark: { appState.toggleQuestionBookmark(question.id) }
+                        )
 
                         if question.type == .fillInBlank {
                             FillInBlankArea(

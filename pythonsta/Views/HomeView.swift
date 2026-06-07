@@ -72,6 +72,11 @@ struct HomeView: View {
                     )
                     .padding(.horizontal, 20)
 
+                    BookmarkedQuestionsCard(
+                        bookmarkCount: appState.progress.bookmarkedQuestionIDs.count
+                    )
+                    .padding(.horizontal, 20)
+
                     // v1: displays the first course as a single linear learning path.
                     // courses[0] is safe — LessonDataSource.courses is a non-empty static constant.
                     // Multi-course navigation (e.g. a course selection screen) is planned for a future sprint.
@@ -245,6 +250,51 @@ private struct ReviewQueueCard: View {
                     Text("復習はありません")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundColor(.textGray)
+                }
+            }
+            .padding(20)
+        }
+    }
+}
+
+// MARK: - Bookmarked Questions
+
+// Surfaces the count of manually bookmarked questions. Bookmark Mode itself
+// (a dedicated practice flow over bookmarkedQuestionIDs) is not implemented
+// yet, so "見る" is shown as a disabled "近日対応" placeholder — mirrors the
+// pattern ReviewQueueCard used before Review Mode existed.
+private struct BookmarkedQuestionsCard: View {
+    let bookmarkCount: Int
+
+    var body: some View {
+        FloatingCard {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("保存した問題")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.textGray)
+
+                HStack(alignment: .center, spacing: 16) {
+                    if bookmarkCount > 0 {
+                        Text("\(bookmarkCount)問")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundColor(.primaryPurple)
+                    } else {
+                        Text("保存した問題はありません")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundColor(.textGray)
+                    }
+
+                    Spacer()
+
+                    // Bookmark Mode isn't implemented yet — "見る" is shown
+                    // disabled with a "近日対応" cue rather than navigating anywhere.
+                    Text("見る（近日対応）")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.textGray)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.textGray.opacity(0.12))
+                        .clipShape(Capsule())
                 }
             }
             .padding(20)

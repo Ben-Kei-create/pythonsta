@@ -89,7 +89,12 @@ struct LessonView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        LessonCard(question: question, category: lesson.category)
+                        LessonCard(
+                            question: question,
+                            category: lesson.category,
+                            isBookmarked: appState.isQuestionBookmarked(question.id),
+                            onToggleBookmark: { appState.toggleQuestionBookmark(question.id) }
+                        )
 
                         if question.type == .fillInBlank {
                             FillInBlankArea(
@@ -335,11 +340,13 @@ private struct HeartRow: View {
 struct LessonCard: View {
     let question: Question
     let category: String
+    var isBookmarked: Bool = false
+    var onToggleBookmark: (() -> Void)? = nil
 
     var body: some View {
         FloatingCard {
             VStack(spacing: 20) {
-                // Category pill
+                // Category pill + bookmark toggle
                 HStack {
                     Text(category)
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -349,6 +356,14 @@ struct LessonCard: View {
                         .background(Color.primaryPurple.opacity(0.1))
                         .clipShape(Capsule())
                     Spacer()
+                    if let onToggleBookmark {
+                        Button(action: onToggleBookmark) {
+                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.primaryPurple)
+                        }
+                        .accessibilityLabel(isBookmarked ? "ブックマークを解除" : "ブックマークに追加")
+                    }
                 }
 
                 // Question prompt
