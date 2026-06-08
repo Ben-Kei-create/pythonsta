@@ -1,0 +1,25 @@
+# Xcode user data
+xcuserdata/
+*.xcbkptlist
+
+# Xcode derived data and archives
+DerivedData/
+*.xcarchive
+*.ipa
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods (if ever added)
+Pods/
+Podfile.lock
+
+# Carthage (if ever added)
+Carthage/Build/
+
+# SPM resolved (keep Package.resolved if SPM is used intentionally)
+# Package.resolved
