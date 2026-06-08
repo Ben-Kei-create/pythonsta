@@ -918,6 +918,35 @@ private struct NoHeartsSheet: View {
                     }
                 }
                 .padding(.top, 4)
+
+                // Future rewarded-ad trigger point (see Services/RewardedAdService.swift).
+                // Inert stub: disabled, clearly labeled "近日対応", does not call into
+                // RewardedAdService or AppState. When wired up, this becomes:
+                //   RewardedAdService.shared.showRewardedAdIfReady(reason: .heartRestore) {
+                //       appState.restoreHeart(1)
+                //   }
+                Button(action: {}) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.rectangle.fill")
+                            .font(.system(size: 14))
+                        Text("広告を見てハート回復")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        Text("近日対応")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.textGray.opacity(0.35))
+                            .clipShape(Capsule())
+                    }
+                    .foregroundColor(.textGray)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(Color.textGray.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+                .disabled(true)
+                .padding(.top, 8)
             }
             .padding(.horizontal, 24)
             .padding(.top, 28)

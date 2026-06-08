@@ -63,6 +63,16 @@ struct ShopView: View {
                     )
                     .padding(.horizontal, 20)
 
+                    // Future rewarded-ad trigger point (see
+                    // Services/RewardedAdService.swift). Inert stub: disabled,
+                    // clearly labeled "近日対応", does not call into
+                    // RewardedAdService or AppState. When wired up, this becomes:
+                    //   RewardedAdService.shared.showRewardedAdIfReady(reason: .heartRestore) {
+                    //       appState.restoreHeart(1)
+                    //   }
+                    RewardedHeartRestoreStubCard(hearts: hearts)
+                        .padding(.horizontal, 20)
+
                     // MARK: Coming-soon items
                     ShopSectionLabel(title: "アイテム", icon: "bag.fill", color: .primaryPurple)
                         .padding(.horizontal, 20)
@@ -276,6 +286,57 @@ private struct FullHeartRefillCard: View {
             }
             .padding(16)
         }
+    }
+}
+
+// MARK: - Rewarded-Ad Heart Restore (stub — see Services/RewardedAdService.swift)
+
+// Inert placeholder for the future "広告を見てハート回復" placement.
+// Always disabled and labeled "近日対応" — no ad SDK, no presentation, no
+// reward grant. Documents where RewardedAdService.shared.showRewardedAdIfReady
+// (reason: .heartRestore) → appState.restoreHeart(1) will attach once the
+// real SDK is integrated.
+private struct RewardedHeartRestoreStubCard: View {
+    let hearts: Int
+
+    private var heartsAreFull: Bool { hearts >= 5 }
+
+    var body: some View {
+        FloatingCard {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.textGray.opacity(0.08))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.textGray.opacity(0.40))
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("広告を見て回復")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(.textGray)
+                    Text(heartsAreFull ? "ハートは満タンです" : "広告視聴でハートを1つ追加")
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundColor(.textGray.opacity(0.70))
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Text("近日対応")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(Color.textGray.opacity(0.35))
+                    .clipShape(Capsule())
+            }
+            .padding(16)
+        }
+        .opacity(0.7)
+        .allowsHitTesting(false)
     }
 }
 
