@@ -17,15 +17,16 @@
 //                    used in real-world projects.
 //
 //  CURRENT STATE
-//  Lessons:   10 (of 130 target; orders 0–9 — Course 0 Python基礎 COMPLETE)
-//  Questions: 100 (of 1300 target; 10 per lesson)
+//  Lessons:   20 (of 130 target; orders 0–19 — Course 0 Python基礎 COMPLETE,
+//             Course 1 変数と型 COMPLETE)
+//  Questions: 200 (of 1300 target; 10 per lesson)
 //
 //  CONTENT EXHAUSTION BEHAVIOR
-//  After completing all 10 lessons of Course 0 (completedLessons = 10),
+//  After completing all 20 lessons of Courses 0–1 (completedLessons = 20),
 //  HomeView shows all nodes as .completed and no .current node. This is
-//  correct: Course 1 (変数と型, orders 10–19) has not been written yet.
+//  correct: Course 2 (演算子, orders 20–29) has not been written yet.
 //  Users simply reach the end of available content. No crash, no misleading
-//  state. Once Course 1's lessons are added, the .current node at order 10
+//  state. Once Course 2's lessons are added, the .current node at order 20
 //  appears automatically.
 //
 //  ADVERTISING POLICY (document only; not yet implemented in code)
@@ -42,7 +43,7 @@
 //  #  Topic (日本語)              Course ID   Lesson IDs   Order range
 //  ── ───────────────────────     ─────────   ──────────   ───────────
 //  01 Python基礎                  0           0–9          0–9       ← COMPLETE (10/10 lessons)
-//  02 変数と型                    1           10–19        10–19
+//  02 変数と型                    1           10–19        10–19     ← COMPLETE (10/10 lessons)
 //  03 演算子                      2           20–29        20–29
 //  04 条件分岐                    3           30–39        30–39
 //  05 繰り返し                    4           40–49        40–49
@@ -105,8 +106,8 @@ enum LessonDataSource {
 
     static let courses: [Course] = [
         PythonBasicsCourse.course,
+        PythonTypesCourse.course,
         // Add future courses here:
-        // VariablesTypesCourse.course,    // course ID 1, orders 10–19
         // OperatorsCourse.course,         // course ID 2, orders 20–29
         // ConditionalsCourse.course,      // course ID 3, orders 30–39
         // LoopsCourse.course,             // course ID 4, orders 40–49
