@@ -16,16 +16,17 @@
 //  Outcome:          Learners can read and write practical Python code
 //                    used in real-world projects.
 //
-//  CURRENT STATE: SEED DATA ONLY
-//  Lessons:   5  (of 130 target; orders 0–4)
-//  Questions: 25 (of 1300 target; 5 per lesson)
+//  CURRENT STATE
+//  Lessons:   10 (of 130 target; orders 0–9 — Course 0 Python基礎 COMPLETE)
+//  Questions: 100 (of 1300 target; 10 per lesson)
 //
-//  SEED DATA EXHAUSTION BEHAVIOR
-//  After completing all 5 seed lessons (completedLessons = 5), HomeView shows
-//  all nodes as .completed and no .current node. This is correct: the next
-//  lessons (orders 5–9) have not been written yet. Users simply reach the end
-//  of available content. No crash, no misleading state. Once lessons 5–9 are
-//  added to PythonBasics.swift, the .current node at order 5 appears automatically.
+//  CONTENT EXHAUSTION BEHAVIOR
+//  After completing all 10 lessons of Course 0 (completedLessons = 10),
+//  HomeView shows all nodes as .completed and no .current node. This is
+//  correct: Course 1 (変数と型, orders 10–19) has not been written yet.
+//  Users simply reach the end of available content. No crash, no misleading
+//  state. Once Course 1's lessons are added, the .current node at order 10
+//  appears automatically.
 //
 //  ADVERTISING POLICY (document only; not yet implemented in code)
 //  - Interstitial ads appear only after a lesson/session completes (ResultView).
@@ -40,7 +41,7 @@
 //
 //  #  Topic (日本語)              Course ID   Lesson IDs   Order range
 //  ── ───────────────────────     ─────────   ──────────   ───────────
-//  01 Python基礎                  0           0–9          0–9       ← SEED (5/10 lessons)
+//  01 Python基礎                  0           0–9          0–9       ← COMPLETE (10/10 lessons)
 //  02 変数と型                    1           10–19        10–19
 //  03 演算子                      2           20–29        20–29
 //  04 条件分岐                    3           30–39        30–39
