@@ -50,7 +50,7 @@ struct ContentView: View {
             case .review:
                 // Snapshot the queue at construction time so mid-session
                 // removals (on correct answers) don't reshuffle the list.
-                ReviewView(questions: LessonDataSource.questions(for: appState.progress.reviewQuestionIDs))
+                ReviewView(questions: LessonDataSource.questions(for: appState.progress.mistakeQuestionIDs))
                     .transition(.opacity)
             case .bookmarks:
                 // Snapshot the bookmark list at construction time so mid-session

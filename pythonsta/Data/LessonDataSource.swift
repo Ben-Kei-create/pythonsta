@@ -144,7 +144,7 @@ enum LessonDataSource {
     // MARK: - Review Mode lookups
 
     // Finds a single question by ID across all courses/lessons.
-    // Used to resolve AppState.progress.reviewQuestionIDs into real Question
+    // Used to resolve AppState.progress.mistakeQuestionIDs into real Question
     // values for ReviewView.
     static func question(for id: Int) -> Question? {
         for lesson in allLessons {

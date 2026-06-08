@@ -4,9 +4,21 @@
 //
 //  Created by 茂木史明 on 2026/06/05.
 //
+//  ═══════════════════════════════════════════════════════════════════
+//  THIS IS "苦手問題" (MISTAKE REVIEW) — NOT THE SRS / FORGETTING-CURVE
+//  SYSTEM ("今日の復習"). The two are distinct product concepts:
+//    • 苦手問題 (Mistake Review, this view): wrong-answer recovery —
+//      surfaces only questions the user previously answered incorrectly.
+//    • 今日の復習 (SRS / spaced repetition): NOT YET IMPLEMENTED — will
+//      resurface questions on a forgetting-curve schedule (nextReviewDate)
+//      regardless of whether they were answered correctly before, tracked
+//      independently of this mistake queue.
+//  Do not conflate the two when extending either system.
+//  ═══════════════════════════════════════════════════════════════════
+//
 //  Practice surface for questions previously answered incorrectly
-//  (AppState.progress.reviewQuestionIDs, surfaced via HomeView's
-//  "今日の復習" card). Reuses LessonView's question-presentation
+//  (AppState.progress.mistakeQuestionIDs, surfaced via HomeView's
+//  "苦手問題" card). Reuses LessonView's question-presentation
 //  components (LessonTopBar, LessonCard, AnswerArea, FillInBlankArea,
 //  ConfirmButton, ResultBottomSheet, AnswerState, LessonUnavailableFallback —
 //  all widened from `private` to internal access for this purpose) so the
@@ -20,9 +32,9 @@
 //      lesson's per-question xpReward/gemReward), reflecting that this is
 //      supplementary practice on already-seen material, not new content.
 //    • Does not affect streak, daily goal progress, or achievements —
-//      only grants the small XP bonus and updates the review queue.
-//    • Correct answers remove the question from reviewQuestionIDs
-//      immediately (persisted via AppState.removeQuestionFromReview).
+//      only grants the small XP bonus and updates the mistake queue.
+//    • Correct answers remove the question from mistakeQuestionIDs
+//      immediately (persisted via AppState.removeQuestionFromMistakeQueue).
 //
 
 import SwiftUI
@@ -170,7 +182,7 @@ struct ReviewView: View {
             fillSubmitted = true
             // Heart-free: no loseHeart() call here, unlike LessonView.
             if isCorrect {
-                appState.removeQuestionFromReview(question.id)
+                appState.removeQuestionFromMistakeQueue(question.id)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 withAnimation { showSheet = true }
@@ -181,7 +193,7 @@ struct ReviewView: View {
             isCorrect = (selectedText == question.correctAnswer)
             // Heart-free: no loseHeart() call here, unlike LessonView.
             if isCorrect {
-                appState.removeQuestionFromReview(question.id)
+                appState.removeQuestionFromMistakeQueue(question.id)
             }
             withAnimation { answerState = .submitted(selectedIndex) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {

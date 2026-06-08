@@ -164,7 +164,7 @@ struct BookmarkView: View {
             isCorrect = typed.lowercased() == question.correctAnswer.lowercased()
             fillSubmitted = true
             // Heart-free, reward-free, queue-free: no loseHeart()/addXP()/
-            // addQuestionToReview()/removeQuestionFromReview() here. Bookmark
+            // addQuestionToMistakeQueue()/removeQuestionFromMistakeQueue() here. Bookmark
             // status changes only via the explicit bookmark button.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 withAnimation { showSheet = true }

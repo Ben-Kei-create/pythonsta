@@ -33,16 +33,21 @@ struct UserProgress {
     // re-arm on a new calendar day with no separate reset bookkeeping needed.
     var dailyGoalCelebrationDateString: String = ""
 
-    // IDs of questions answered incorrectly, queued for future review.
-    // Appended (de-duplicated) by AppState.addQuestionToReview(); a question
-    // already in the queue is not re-added on a repeat miss. Review Mode
-    // itself is not implemented yet — this only persists the queue.
-    var reviewQuestionIDs: [Int] = []
+    // IDs of questions answered incorrectly, queued for "苦手問題" (Mistake
+    // Review) practice. Appended (de-duplicated) by
+    // AppState.addQuestionToMistakeQueue(); a question already in the queue
+    // is not re-added on a repeat miss.
+    //
+    // NOTE: This is the wrong-answer recovery queue ("苦手問題"), distinct
+    // from the future spaced-repetition / forgetting-curve system ("今日の
+    // 復習" / SRS), which has not been implemented yet and will track its
+    // own due-date schedule independent of this queue.
+    var mistakeQuestionIDs: [Int] = []
 
     // IDs of questions the user has manually bookmarked to revisit later.
     // Toggled (added/removed) by AppState.toggleQuestionBookmark(); independent
-    // of reviewQuestionIDs — bookmarking is a manual user choice, not a
-    // wrong-answer consequence, and does not affect the review queue.
+    // of mistakeQuestionIDs — bookmarking is a manual user choice, not a
+    // wrong-answer consequence, and does not affect the mistake queue.
     var bookmarkedQuestionIDs: [Int] = []
 
     // XP threshold to advance from `level` to `level + 1`.

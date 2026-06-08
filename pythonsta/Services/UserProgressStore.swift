@@ -37,7 +37,11 @@ struct UserProgressStore {
         static let hasCompletedOnboarding = "progress.hasCompletedOnboarding"
         static let learningPurpose    = "progress.learningPurpose"
         static let dailyGoalCelebrationDate = "progress.dailyGoalCelebrationDate"
-        static let reviewQuestionIDs = "progress.reviewQuestionIDs"
+        // Swift-side name reflects the current "苦手問題" (Mistake Review)
+        // concept; the on-disk string key is kept as the original
+        // "progress.reviewQuestionIDs" so existing users' saved queues
+        // load without any migration step.
+        static let mistakeQuestionIDs = "progress.reviewQuestionIDs"
         static let bookmarkedQuestionIDs = "progress.bookmarkedQuestionIDs"
     }
 
@@ -75,7 +79,7 @@ struct UserProgressStore {
             hasCompletedOnboarding: hasCompletedOnboarding,
             learningPurpose:        defaults.string(forKey: Key.learningPurpose) ?? "",
             dailyGoalCelebrationDateString: defaults.string(forKey: Key.dailyGoalCelebrationDate) ?? "",
-            reviewQuestionIDs: defaults.array(forKey: Key.reviewQuestionIDs) as? [Int] ?? [],
+            mistakeQuestionIDs: defaults.array(forKey: Key.mistakeQuestionIDs) as? [Int] ?? [],
             bookmarkedQuestionIDs: defaults.array(forKey: Key.bookmarkedQuestionIDs) as? [Int] ?? []
         )
     }
@@ -98,7 +102,7 @@ struct UserProgressStore {
         defaults.set(progress.hasCompletedOnboarding,  forKey: Key.hasCompletedOnboarding)
         defaults.set(progress.learningPurpose,         forKey: Key.learningPurpose)
         defaults.set(progress.dailyGoalCelebrationDateString, forKey: Key.dailyGoalCelebrationDate)
-        defaults.set(progress.reviewQuestionIDs,              forKey: Key.reviewQuestionIDs)
+        defaults.set(progress.mistakeQuestionIDs,             forKey: Key.mistakeQuestionIDs)
         defaults.set(progress.bookmarkedQuestionIDs,          forKey: Key.bookmarkedQuestionIDs)
     }
 
@@ -113,7 +117,7 @@ struct UserProgressStore {
          Key.currentLevel, Key.levelCurrentXP, Key.achievementIDs, Key.dailyQuestions,
          Key.lastActiveDate, Key.hearts, Key.dailyGoal,
          Key.hasCompletedOnboarding, Key.learningPurpose,
-         Key.dailyGoalCelebrationDate, Key.reviewQuestionIDs,
+         Key.dailyGoalCelebrationDate, Key.mistakeQuestionIDs,
          Key.bookmarkedQuestionIDs].forEach { defaults.removeObject(forKey: $0) }
     }
     #endif

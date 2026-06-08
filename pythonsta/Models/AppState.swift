@@ -137,36 +137,40 @@ final class AppState: ObservableObject {
         save()
     }
 
-    // Queues a missed question for later review. De-duplicates by ID so a
-    // question already queued isn't appended again on a repeat miss.
-    // Called by LessonView immediately when an answer is marked incorrect —
-    // never for correct answers.
-    func addQuestionToReview(_ questionID: Int) {
-        guard !progress.reviewQuestionIDs.contains(questionID) else { return }
-        progress.reviewQuestionIDs.append(questionID)
+    // Queues a missed question for "苦手問題" (Mistake Review) practice.
+    // De-duplicates by ID so a question already queued isn't appended again
+    // on a repeat miss. Called by LessonView immediately when an answer is
+    // marked incorrect — never for correct answers.
+    //
+    // NOTE: This is the wrong-answer recovery queue ("苦手問題"), not the
+    // future spaced-repetition / forgetting-curve system ("今日の復習" / SRS).
+    // SRS will track its own due-date schedule independently.
+    func addQuestionToMistakeQueue(_ questionID: Int) {
+        guard !progress.mistakeQuestionIDs.contains(questionID) else { return }
+        progress.mistakeQuestionIDs.append(questionID)
         save()
     }
 
-    // Routes to Review Mode. ReviewView snapshots the current queue itself
-    // (via ContentView's construction) so removals mid-session don't reshuffle
-    // the in-progress question list.
+    // Routes to Mistake Review ("苦手問題"). ReviewView snapshots the current
+    // queue itself (via ContentView's construction) so removals mid-session
+    // don't reshuffle the in-progress question list.
     func startReview() {
         navigate(to: .review)
     }
 
-    // Removes a question from the review queue once answered correctly in
-    // Review Mode — persisted immediately so the queue stays accurate even
+    // Removes a question from the mistake queue once answered correctly in
+    // Mistake Review — persisted immediately so the queue stays accurate even
     // if the app closes mid-session. Wrong answers leave the queue untouched.
-    func removeQuestionFromReview(_ questionID: Int) {
-        guard let index = progress.reviewQuestionIDs.firstIndex(of: questionID) else { return }
-        progress.reviewQuestionIDs.remove(at: index)
+    func removeQuestionFromMistakeQueue(_ questionID: Int) {
+        guard let index = progress.mistakeQuestionIDs.firstIndex(of: questionID) else { return }
+        progress.mistakeQuestionIDs.remove(at: index)
         save()
     }
 
     // Manually toggles a question's bookmark state — independent of the
-    // review queue (bookmarking is a deliberate user choice, not a
+    // mistake queue (bookmarking is a deliberate user choice, not a
     // wrong-answer consequence). Persisted immediately; does not touch XP,
-    // gems, hearts, streak, daily goal, or reviewQuestionIDs.
+    // gems, hearts, streak, daily goal, or mistakeQuestionIDs.
     func toggleQuestionBookmark(_ questionID: Int) {
         if let index = progress.bookmarkedQuestionIDs.firstIndex(of: questionID) {
             progress.bookmarkedQuestionIDs.remove(at: index)

@@ -66,8 +66,8 @@ struct HomeView: View {
                     DailyProgressCard(progress: appState.progress)
                         .padding(.horizontal, 20)
 
-                    ReviewQueueCard(
-                        reviewCount: appState.progress.reviewQuestionIDs.count,
+                    MistakeQueueCard(
+                        mistakeCount: appState.progress.mistakeQuestionIDs.count,
                         onStartReview: { appState.startReview() }
                     )
                     .padding(.horizontal, 20)
@@ -208,29 +208,34 @@ private struct StatItem: View {
     }
 }
 
-// MARK: - Review Queue
+// MARK: - Mistake Queue
 
 // Surfaces questions answered incorrectly and queued via
-// AppState.addQuestionToReview(). Tapping "復習する" starts Review Mode
-// (AppState.startReview() → ReviewView) when the queue has items.
-private struct ReviewQueueCard: View {
-    let reviewCount: Int
+// AppState.addQuestionToMistakeQueue(). Tapping "復習する" starts Mistake
+// Review (AppState.startReview() → ReviewView) when the queue has items.
+//
+// NOTE: "苦手問題" (Mistake Review) is the wrong-answer recovery queue —
+// distinct from the future spaced-repetition / forgetting-curve system
+// ("今日の復習" / SRS), which is not implemented yet and will surface its
+// own due-date-based card independently when it ships.
+private struct MistakeQueueCard: View {
+    let mistakeCount: Int
     let onStartReview: () -> Void
 
     var body: some View {
         FloatingCard {
             VStack(alignment: .leading, spacing: 14) {
-                Text("今日の復習")
+                Text("苦手問題")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(.textGray)
 
-                if reviewCount > 0 {
+                if mistakeCount > 0 {
                     HStack(alignment: .center, spacing: 16) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("復習が必要な問題があります")
                                 .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .foregroundColor(.textDark)
-                            Text("\(reviewCount)問")
+                            Text("\(mistakeCount)問")
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundColor(.primaryPurple)
                         }
