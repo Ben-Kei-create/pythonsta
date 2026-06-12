@@ -17,16 +17,17 @@
 //                    used in real-world projects.
 //
 //  CURRENT STATE
-//  Lessons:   30 (of 130 target; orders 0–29 — Course 0 Python基礎 COMPLETE,
-//             Course 1 変数と型 COMPLETE, Course 2 演算子 COMPLETE)
-//  Questions: 300 (of 1300 target; 10 per lesson)
+//  Lessons:   40 (of 130 target; orders 0–39 — Course 0 Python基礎 COMPLETE,
+//             Course 1 変数と型 COMPLETE, Course 2 演算子 COMPLETE,
+//             Course 3 条件分岐 COMPLETE)
+//  Questions: 400 (of 1300 target; 10 per lesson)
 //
 //  CONTENT EXHAUSTION BEHAVIOR
-//  After completing all 30 lessons of Courses 0–2 (completedLessons = 30),
+//  After completing all 40 lessons of Courses 0–3 (completedLessons = 40),
 //  HomeView shows all nodes as .completed and no .current node. This is
-//  correct: Course 3 (条件分岐, orders 30–39) has not been written yet.
+//  correct: Course 4 (繰り返し, orders 40–49) has not been written yet.
 //  Users simply reach the end of available content. No crash, no misleading
-//  state. Once Course 3's lessons are added, the .current node at order 30
+//  state. Once Course 4's lessons are added, the .current node at order 40
 //  appears automatically.
 //
 //  ADVERTISING POLICY (document only; not yet implemented in code)
@@ -45,7 +46,7 @@
 //  01 Python基礎                  0           0–9          0–9       ← COMPLETE (10/10 lessons)
 //  02 変数と型                    1           10–19        10–19     ← COMPLETE (10/10 lessons)
 //  03 演算子                      2           20–29        20–29     ← COMPLETE (10/10 lessons)
-//  04 条件分岐                    3           30–39        30–39
+//  04 条件分岐                    3           30–39        30–39     ← COMPLETE (10/10 lessons)
 //  05 繰り返し                    4           40–49        40–49
 //  06 関数                        5           50–59        50–59
 //  07 リストとタプル               6           60–69        60–69
@@ -108,8 +109,8 @@ enum LessonDataSource {
         PythonBasicsCourse.course,
         PythonTypesCourse.course,
         PythonOperatorsCourse.course,
+        PythonConditionalsCourse.course,
         // Add future courses here:
-        // ConditionalsCourse.course,      // course ID 3, orders 30–39
         // LoopsCourse.course,             // course ID 4, orders 40–49
         // FunctionsCourse.course,         // course ID 5, orders 50–59
         // ListsTuplesCourse.course,       // course ID 6, orders 60–69
